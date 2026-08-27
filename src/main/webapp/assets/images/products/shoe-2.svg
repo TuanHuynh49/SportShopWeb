@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="100%" height="100%">
+  <rect width="400" height="400" fill="#f8fafc"/>
+  <defs>
+    <linearGradient id="shoeGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#e2e8f0"/>
+    </linearGradient>
+    <linearGradient id="adidasBlue" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+  </defs>
+  <circle cx="200" cy="200" r="130" fill="#f1f5f9" opacity="0.9"/>
+  <g transform="translate(45, 90)">
+    <!-- Sole & Studs -->
+    <path d="M40 180 Q150 190 270 170 Q285 165 290 155 Q285 145 250 148 Q150 155 50 148 Q35 155 40 180 Z" fill="#0f172a"/>
+    <polygon points="60,180 55,195 70,195 75,180" fill="#0f172a"/>
+    <polygon points="100,182 95,198 110,198 115,182" fill="#0f172a"/>
+    <polygon points="150,183 145,198 160,198 165,183" fill="#0f172a"/>
+    <polygon points="210,180 205,196 220,196 225,180" fill="#0f172a"/>
+    <polygon points="255,173 250,190 265,190 270,173" fill="#0f172a"/>
+    <!-- Shoe Upper -->
+    <path d="M45 155 C35 125 70 85 110 75 C145 68 180 85 210 115 C240 120 280 135 290 155 C270 168 170 172 45 155 Z" fill="url(#shoeGrad2)" stroke="#cbd5e1" stroke-width="2"/>
+    <!-- 3 Stripes -->
+    <polygon points="135,80 150,83 175,145 160,145" fill="url(#adidasBlue)"/>
+    <polygon points="155,84 170,87 195,147 180,147" fill="url(#adidasBlue)"/>
+    <polygon points="175,90 190,93 215,150 200,150" fill="url(#adidasBlue)"/>
+    <!-- Collar -->
+    <path d="M95 78 C90 55 120 45 135 60 C145 70 155 80 160 85 Z" fill="#0f172a"/>
+  </g>
+  <text x="200" y="345" font-family="'Montserrat', sans-serif" font-size="12" font-weight="700" fill="#0f172a" text-anchor="middle" letter-spacing="2">ADIDAS PREDATOR ACCURACY</text>
+</svg>

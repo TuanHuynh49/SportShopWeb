@@ -1,0 +1,505 @@
+/* =============================================================================
+   components.css — Reusable UI Components
+   Design: Clean, Sleek, Athletic & High-Contrast (COLOR_GUIDELINES.md)
+   ============================================================================= */
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   1. BUTTONS (10% Focus Action)
+   ══════════════════════════════════════════════════════════════════════════════ */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-5);
+    border-radius: var(--radius-md);
+    font-family: var(--font-body);
+    font-weight: var(--fw-semibold);
+    font-size: var(--fs-small);
+    line-height: 1.4;
+    text-decoration: none;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all var(--transition-fast);
+    white-space: nowrap;
+    user-select: none;
+}
+.btn:hover {
+    text-decoration: none;
+}
+.btn:active {
+    transform: scale(0.98);
+}
+.btn:disabled, .btn.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Primary — Stealth Dark Slate (#0F172A) */
+.btn-primary {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--text-inverse);
+    box-shadow: var(--shadow-sm);
+}
+.btn-primary:hover {
+    background-color: var(--color-primary-hover);
+    border-color: var(--color-primary-hover);
+    color: var(--text-inverse);
+    box-shadow: var(--shadow-md);
+}
+
+/* Accent — Electric Blue (#2563EB) */
+.btn-accent {
+    background-color: var(--color-accent);
+    border-color: var(--color-accent);
+    color: var(--text-inverse);
+    box-shadow: var(--shadow-sm);
+}
+.btn-accent:hover {
+    background-color: var(--color-accent-hover);
+    border-color: var(--color-accent-hover);
+    color: var(--text-inverse);
+    box-shadow: var(--shadow-md);
+}
+
+/* Outline Secondary */
+.btn-outline-secondary {
+    background-color: var(--bg-surface);
+    border-color: var(--border-subtle);
+    color: var(--text-primary);
+}
+.btn-outline-secondary:hover {
+    background-color: var(--bg-subtle);
+    border-color: var(--border-focus);
+    color: var(--text-primary);
+}
+
+/* Outline Primary */
+.btn-outline-primary {
+    background-color: transparent;
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+.btn-outline-primary:hover {
+    background-color: var(--color-primary);
+    color: var(--text-inverse);
+}
+
+/* Danger / Error */
+.btn-danger {
+    background-color: var(--color-error);
+    border-color: var(--color-error);
+    color: var(--text-inverse);
+}
+.btn-danger:hover {
+    background-color: #b91c1c;
+    border-color: #b91c1c;
+    color: var(--text-inverse);
+}
+
+/* Button Sizes */
+.btn-sm  { padding: 0.35rem 0.75rem; font-size: var(--fs-caption); }
+.btn-lg  { padding: 0.75rem 1.5rem; font-size: var(--fs-body); }
+.btn-full { width: 100%; }
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   2. PRODUCT CARD (Clean White + Subtle Border)
+   ══════════════════════════════════════════════════════════════════════════════ */
+.product-card {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: box-shadow var(--transition-normal), border-color var(--transition-normal);
+    position: relative;
+}
+.product-card:hover {
+    border-color: #cbd5e1;
+    box-shadow: var(--shadow-md);
+}
+
+.product-card__img-wrap {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 1 / 1;
+    background-color: var(--bg-subtle);
+}
+.product-card__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+.product-card:hover .product-card__img {
+    transform: scale(1.04);
+}
+
+.product-card__badge {
+    position: absolute;
+    top: var(--space-3);
+    left: var(--space-3);
+    z-index: 2;
+}
+
+.product-card__actions {
+    position: absolute;
+    bottom: var(--space-3);
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    gap: var(--space-2);
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity var(--transition-fast), transform var(--transition-fast);
+    z-index: 3;
+}
+.product-card:hover .product-card__actions {
+    opacity: 1;
+    transform: translateY(0);
+}
+.product-card__action-btn {
+    background-color: var(--bg-surface);
+    color: var(--text-primary);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 0.35rem 0.75rem;
+    font-size: var(--fs-caption);
+    font-weight: var(--fw-semibold);
+    text-decoration: none;
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition-fast);
+}
+.product-card__action-btn:hover {
+    background-color: var(--color-primary);
+    color: var(--text-inverse);
+    border-color: var(--color-primary);
+}
+
+.product-card__body {
+    padding: var(--space-4);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+}
+.product-card__brand {
+    font-size: var(--fs-caption);
+    font-weight: var(--fw-bold);
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+.product-card__name {
+    font-family: var(--font-body);
+    font-weight: var(--fw-semibold);
+    font-size: var(--fs-small);
+    color: var(--text-primary);
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-decoration: none;
+    margin-bottom: var(--space-2);
+}
+.product-card__name:hover {
+    color: var(--color-accent);
+}
+
+.product-card__price-row {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-2);
+    margin-top: auto;
+    padding-top: var(--space-2);
+    border-top: 1px solid var(--border-subtle);
+}
+.product-card__price {
+    font-size: 1rem;
+    font-weight: var(--fw-bold);
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+}
+.product-card__price-original {
+    font-size: var(--fs-caption);
+    color: var(--text-muted);
+    text-decoration: line-through;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Product Grid */
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-5);
+}
+@media (max-width: 1100px) {
+    .product-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 768px) {
+    .product-grid { grid-template-columns: repeat(2, 1fr); gap: var(--space-3); }
+}
+@media (max-width: 480px) {
+    .product-grid { grid-template-columns: 1fr; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   3. BADGES & PILLS
+   ══════════════════════════════════════════════════════════════════════════════ */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0.2rem 0.55rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    font-weight: var(--fw-semibold);
+    line-height: 1.2;
+    white-space: nowrap;
+}
+.badge-dark      { background: var(--color-primary); color: var(--text-inverse); }
+.badge-accent    { background: var(--color-accent-subtle); color: var(--color-accent); border: 1px solid rgba(37, 99, 235, 0.2); }
+.badge-discount  { background: var(--color-primary); color: var(--text-inverse); font-weight: var(--fw-bold); }
+.badge-new       { background: var(--color-accent); color: var(--text-inverse); font-weight: var(--fw-bold); }
+
+/* Status Badges */
+.badge-status-pending    { background: var(--color-warning-bg); color: var(--color-warning); border: 1px solid rgba(217, 119, 6, 0.2); }
+.badge-status-processing { background: var(--color-accent-subtle); color: var(--color-accent); border: 1px solid rgba(37, 99, 235, 0.2); }
+.badge-status-delivered  { background: var(--color-success-bg); color: var(--color-success); border: 1px solid rgba(22, 163, 74, 0.2); }
+.badge-status-cancelled  { background: var(--color-error-bg); color: var(--color-error); border: 1px solid rgba(220, 38, 38, 0.2); }
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   4. CARDS & CONTAINERS
+   ══════════════════════════════════════════════════════════════════════════════ */
+.card {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xs);
+    overflow: hidden;
+}
+.card-header {
+    padding: var(--space-4) var(--space-5);
+    background-color: var(--bg-surface);
+    border-bottom: 1px solid var(--border-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.card-title {
+    font-size: var(--fs-body);
+    font-weight: var(--fw-bold);
+    color: var(--text-primary);
+    margin: 0;
+}
+.card-body {
+    padding: var(--space-5);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   5. FORM CONTROLS
+   ══════════════════════════════════════════════════════════════════════════════ */
+.form-group {
+    margin-bottom: var(--space-4);
+}
+.form-label {
+    display: block;
+    font-size: var(--fs-small);
+    font-weight: var(--fw-semibold);
+    color: var(--text-primary);
+    margin-bottom: var(--space-2);
+}
+.form-label .required {
+    color: var(--color-error);
+}
+
+.form-control {
+    display: block;
+    width: 100%;
+    padding: 0.6rem 0.85rem;
+    font-size: var(--fs-small);
+    font-family: var(--font-body);
+    color: var(--text-primary);
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+.form-control::placeholder {
+    color: var(--text-muted);
+}
+.form-control:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.08);
+}
+.form-control.is-invalid {
+    border-color: var(--color-error);
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+}
+
+.form-select {
+    padding-right: 2rem;
+    cursor: pointer;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   6. TABLE
+   ══════════════════════════════════════════════════════════════════════════════ */
+.table-responsive {
+    overflow-x: auto;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-subtle);
+    background-color: var(--bg-surface);
+}
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--fs-small);
+    margin-bottom: 0;
+}
+.table thead th {
+    background-color: var(--bg-subtle);
+    padding: var(--space-3) var(--space-4);
+    font-size: var(--fs-caption);
+    font-weight: var(--fw-bold);
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--border-subtle);
+    text-align: left;
+}
+.table tbody td {
+    padding: var(--space-3) var(--space-4);
+    border-bottom: 1px solid var(--border-subtle);
+    color: var(--text-primary);
+    vertical-align: middle;
+}
+.table tbody tr:last-child td {
+    border-bottom: none;
+}
+.table tbody tr:hover {
+    background-color: #f8fafc;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   7. PAGINATION
+   ══════════════════════════════════════════════════════════════════════════════ */
+.pagination {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.pagination__item {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    padding: 0 8px;
+    border-radius: var(--radius-md);
+    font-size: var(--fs-small);
+    font-weight: var(--fw-semibold);
+    color: var(--text-primary);
+    text-decoration: none;
+    border: 1px solid var(--border-subtle);
+    background-color: var(--bg-surface);
+    transition: all var(--transition-fast);
+}
+.pagination__item:hover {
+    border-color: var(--text-primary);
+    color: var(--text-primary);
+}
+.pagination__item.active {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--text-inverse);
+}
+.pagination__item.disabled {
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   8. QUANTITY STEPPER & VARIANT SELECTOR
+   ══════════════════════════════════════════════════════════════════════════════ */
+.qty-stepper {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    height: 38px;
+    background-color: var(--bg-surface);
+}
+.qty-stepper__btn {
+    width: 36px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--bg-subtle);
+    color: var(--text-primary);
+    font-size: 1rem;
+    font-weight: var(--fw-bold);
+    cursor: pointer;
+    border: none;
+    transition: background-color var(--transition-fast);
+}
+.qty-stepper__btn:hover {
+    background-color: #e2e8f0;
+}
+.qty-stepper__input {
+    width: 48px;
+    height: 100%;
+    text-align: center;
+    border: none;
+    font-weight: var(--fw-bold);
+    color: var(--text-primary);
+    background-color: var(--bg-surface);
+}
+
+.variant-btn {
+    padding: 0.4rem 0.85rem;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    font-size: var(--fs-small);
+    font-weight: var(--fw-semibold);
+    color: var(--text-primary);
+    background-color: var(--bg-surface);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+.variant-btn:hover {
+    border-color: var(--text-primary);
+}
+.variant-btn.selected {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--text-inverse);
+}
+.variant-btn.out-of-stock {
+    opacity: 0.4;
+    text-decoration: line-through;
+    cursor: not-allowed;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   9. ALERTS
+   ══════════════════════════════════════════════════════════════════════════════ */
+.alert {
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-md);
+    font-size: var(--fs-small);
+    font-weight: var(--fw-medium);
+    margin-bottom: var(--space-4);
+    border: 1px solid transparent;
+}
+.alert-success { background: var(--color-success-bg); color: var(--color-success); border-color: rgba(22,163,74,0.2); }
+.alert-danger  { background: var(--color-error-bg);   color: var(--color-error);   border-color: rgba(220,38,38,0.2); }
+.alert-warning { background: var(--color-warning-bg); color: var(--color-warning); border-color: rgba(217,119,6,0.2); }
