@@ -1,9 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="100%" height="100%">
-  <rect width="400" height="400" fill="#f1f5f9"/>
-  <!-- Soccer Ball & Shoe Silhouette in Slate/Neutral Athletic Style -->
-  <circle cx="200" cy="180" r="60" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="3"/>
-  <path d="M200 135 L220 150 L212 175 L188 175 L180 150 Z" fill="#0f172a"/>
-  <path d="M200 135 L200 120 M220 150 L235 145 M212 175 L225 190 M188 175 L175 190 M180 150 L165 145" stroke="#0f172a" stroke-width="2.5"/>
-  <path d="M140 260 C170 240, 230 240, 260 260 C250 275, 230 280, 200 280 C170 280, 150 275, 140 260 Z" fill="#cbd5e1"/>
-  <text x="200" y="320" font-family="-apple-system, Montserrat, sans-serif" font-size="14" font-weight="600" fill="#64748b" text-anchor="middle" letter-spacing="1">SPORTSHOP PRODUCT</text>
-</svg>
