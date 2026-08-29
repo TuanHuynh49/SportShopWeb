@@ -21,11 +21,11 @@
                 <span class="sidebar-item__icon">🏠</span>
                 <span class="sidebar-item__text">Trang chủ</span>
             </a>
-            <a href="${pageContext.request.contextPath}/product/list" class="sidebar-item">
+            <a href="${pageContext.request.contextPath}/preview/product-list.html" class="sidebar-item">
                 <span class="sidebar-item__icon">👟</span>
                 <span class="sidebar-item__text">Tất cả sản phẩm</span>
             </a>
-            <a href="${pageContext.request.contextPath}/product/list?brandId=sale" class="sidebar-item">
+            <a href="${pageContext.request.contextPath}/preview/product-list.html?cat=sale" class="sidebar-item">
                 <span class="sidebar-item__icon">⚡</span>
                 <span class="sidebar-item__text text-accent fw-bold">Khuyến mãi Hot</span>
             </a>
@@ -33,23 +33,23 @@
 
         <div class="sidebar-section">
             <div class="sidebar-section__title">DANH MỤC THỂ THAO</div>
-            <a href="${pageContext.request.contextPath}/product/list?categoryId=1" class="sidebar-item">
+            <a href="${pageContext.request.contextPath}/preview/product-list.html?cat=giay" class="sidebar-item">
                 <span class="sidebar-item__icon">👟</span>
                 <span class="sidebar-item__text">Giày Đá Bóng</span>
             </a>
-            <a href="${pageContext.request.contextPath}/product/list?categoryId=2" class="sidebar-item">
+            <a href="${pageContext.request.contextPath}/preview/product-list.html?cat=ao" class="sidebar-item">
                 <span class="sidebar-item__icon">👕</span>
                 <span class="sidebar-item__text">Áo Thi Đấu CLB</span>
             </a>
-            <a href="${pageContext.request.contextPath}/product/list?categoryId=3" class="sidebar-item">
+            <a href="${pageContext.request.contextPath}/preview/product-list.html?cat=quan" class="sidebar-item">
                 <span class="sidebar-item__icon">🩳</span>
                 <span class="sidebar-item__text">Quần Thể Thao</span>
             </a>
-            <a href="${pageContext.request.contextPath}/product/list?categoryId=4" class="sidebar-item">
+            <a href="${pageContext.request.contextPath}/preview/product-list.html?cat=bong" class="sidebar-item">
                 <span class="sidebar-item__icon">⚽</span>
                 <span class="sidebar-item__text">Quả Bóng Đá</span>
             </a>
-            <a href="${pageContext.request.contextPath}/product/list?categoryId=5" class="sidebar-item">
+            <a href="${pageContext.request.contextPath}/preview/product-list.html?cat=phukien" class="sidebar-item">
                 <span class="sidebar-item__icon">🧤</span>
                 <span class="sidebar-item__text">Găng Tay & Vớ</span>
             </a>
@@ -57,30 +57,28 @@
 
         <div class="sidebar-section">
             <div class="sidebar-section__title">MUA SẮM & ĐƠN HÀNG</div>
-            <a href="${pageContext.request.contextPath}/cart" class="sidebar-item">
+            <a href="${pageContext.request.contextPath}/preview/cart.html" class="sidebar-item">
                 <span class="sidebar-item__icon">🛒</span>
                 <span class="sidebar-item__text">Giỏ hàng</span>
             </a>
-            <a href="${pageContext.request.contextPath}/checkout" class="sidebar-item">
+            <a href="${pageContext.request.contextPath}/preview/checkout.html" class="sidebar-item">
                 <span class="sidebar-item__icon">💳</span>
                 <span class="sidebar-item__text">Thanh toán</span>
             </a>
-            <a href="${pageContext.request.contextPath}/order/history" class="sidebar-item">
+            <a href="${pageContext.request.contextPath}/preview/order-history.html" class="sidebar-item">
                 <span class="sidebar-item__icon">📦</span>
                 <span class="sidebar-item__text">Đơn mua của tôi</span>
             </a>
         </div>
 
-        <c:if test="${not empty sessionScope.authUser and sessionScope.authUser.admin}">
-            <div class="sidebar-section">
-                <div class="sidebar-section__title">HỆ THỐNG QUẢN TRỊ</div>
-                <a href="${pageContext.request.contextPath}/admin/dashboard" class="sidebar-item" style="color: var(--color-accent); font-weight: var(--fw-bold);">
-                    <span class="sidebar-item__icon">📊</span>
-                    <span class="sidebar-item__text">Admin Dashboard</span>
-                    <span class="badge badge-accent ms-auto">ADMIN</span>
-                </a>
-            </div>
-        </c:if>
+        <div class="sidebar-section">
+            <div class="sidebar-section__title">HỆ THỐNG QUẢN TRỊ</div>
+            <a href="${pageContext.request.contextPath}/preview/admin-dashboard.html" class="sidebar-item" style="color: var(--color-accent); font-weight: var(--fw-bold);">
+                <span class="sidebar-item__icon">📊</span>
+                <span class="sidebar-item__text">Admin Dashboard</span>
+                <span class="badge badge-accent ms-auto">ADMIN</span>
+            </a>
+        </div>
     </nav>
 </aside>
 <div class="sidebar-backdrop" id="sidebar-backdrop"></div>

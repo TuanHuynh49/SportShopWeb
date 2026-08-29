@@ -23,15 +23,15 @@
         <%-- Group 1: Khám phá & Mua sắm --%>
         <div class="sidebar-section">
             <div class="sidebar-section__title">KHÁM PHÁ</div>
-            <a href="${pageContext.request.contextPath}/" class="sidebar-item ${empty param.categoryId and empty param.brandId and empty param.sale ? 'active' : ''}">
+            <a href="${pageContext.request.contextPath}/" class="sidebar-item ${empty param.cat and empty param.sale ? 'active' : ''}">
                 <span class="sidebar-item__icon">🏠</span>
                 <span class="sidebar-item__text">Trang chủ</span>
             </a>
-            <a href="${pageContext.request.contextPath}/product/list" class="sidebar-item">
+            <a href="${pageContext.request.contextPath}/preview/product-list.html" class="sidebar-item">
                 <span class="sidebar-item__icon">👟</span>
                 <span class="sidebar-item__text">Tất cả sản phẩm</span>
             </a>
-            <a href="${pageContext.request.contextPath}/product/list?brandId=sale" class="sidebar-item">
+            <a href="${pageContext.request.contextPath}/preview/product-list.html?cat=sale" class="sidebar-item">
                 <span class="sidebar-item__icon">⚡</span>
                 <span class="sidebar-item__text text-accent fw-bold">Khuyến mãi Hot</span>
             </a>
@@ -40,23 +40,23 @@
         <%-- Group 2: Danh mục Thể thao --%>
         <div class="sidebar-section">
             <div class="sidebar-section__title">DANH MỤC THỂ THAO</div>
-            <a href="${pageContext.request.contextPath}/product/list?categoryId=1" class="sidebar-item ${param.categoryId == '1' ? 'active' : ''}">
+            <a href="${pageContext.request.contextPath}/preview/product-list.html?cat=giay" class="sidebar-item ${param.cat == 'giay' ? 'active' : ''}">
                 <span class="sidebar-item__icon">👟</span>
                 <span class="sidebar-item__text">Giày Đá Bóng</span>
             </a>
-            <a href="${pageContext.request.contextPath}/product/list?categoryId=2" class="sidebar-item ${param.categoryId == '2' ? 'active' : ''}">
+            <a href="${pageContext.request.contextPath}/preview/product-list.html?cat=ao" class="sidebar-item ${param.cat == 'ao' ? 'active' : ''}">
                 <span class="sidebar-item__icon">👕</span>
                 <span class="sidebar-item__text">Áo Thi Đấu CLB</span>
             </a>
-            <a href="${pageContext.request.contextPath}/product/list?categoryId=3" class="sidebar-item ${param.categoryId == '3' ? 'active' : ''}">
+            <a href="${pageContext.request.contextPath}/preview/product-list.html?cat=quan" class="sidebar-item ${param.cat == 'quan' ? 'active' : ''}">
                 <span class="sidebar-item__icon">🩳</span>
                 <span class="sidebar-item__text">Quần Thể Thao</span>
             </a>
-            <a href="${pageContext.request.contextPath}/product/list?categoryId=4" class="sidebar-item ${param.categoryId == '4' ? 'active' : ''}">
+            <a href="${pageContext.request.contextPath}/preview/product-list.html?cat=bong" class="sidebar-item ${param.cat == 'bong' ? 'active' : ''}">
                 <span class="sidebar-item__icon">⚽</span>
                 <span class="sidebar-item__text">Quả Bóng Đá</span>
             </a>
-            <a href="${pageContext.request.contextPath}/product/list?categoryId=5" class="sidebar-item ${param.categoryId == '5' ? 'active' : ''}">
+            <a href="${pageContext.request.contextPath}/preview/product-list.html?cat=phukien" class="sidebar-item ${param.cat == 'phukien' ? 'active' : ''}">
                 <span class="sidebar-item__icon">🧤</span>
                 <span class="sidebar-item__text">Găng Tay & Vớ</span>
             </a>
@@ -65,31 +65,29 @@
         <%-- Group 3: Tiện ích Mua hàng --%>
         <div class="sidebar-section">
             <div class="sidebar-section__title">MUA SẮM & ĐƠN HÀNG</div>
-            <a href="${pageContext.request.contextPath}/cart" class="sidebar-item">
+            <a href="${pageContext.request.contextPath}/preview/cart.html" class="sidebar-item">
                 <span class="sidebar-item__icon">🛒</span>
                 <span class="sidebar-item__text">Giỏ hàng</span>
             </a>
-            <a href="${pageContext.request.contextPath}/checkout" class="sidebar-item">
+            <a href="${pageContext.request.contextPath}/preview/checkout.html" class="sidebar-item">
                 <span class="sidebar-item__icon">💳</span>
                 <span class="sidebar-item__text">Thanh toán</span>
             </a>
-            <a href="${pageContext.request.contextPath}/order/history" class="sidebar-item">
+            <a href="${pageContext.request.contextPath}/preview/order-history.html" class="sidebar-item">
                 <span class="sidebar-item__icon">📦</span>
                 <span class="sidebar-item__text">Đơn mua của tôi</span>
             </a>
         </div>
 
-        <%-- Group 4: Quản trị (Dành cho Admin) --%>
-        <c:if test="${not empty sessionScope.authUser and sessionScope.authUser.admin}">
-            <div class="sidebar-section">
-                <div class="sidebar-section__title">HỆ THỐNG QUẢN TRỊ</div>
-                <a href="${pageContext.request.contextPath}/admin/dashboard" class="sidebar-item" style="color: var(--color-accent); font-weight: var(--fw-bold);">
-                    <span class="sidebar-item__icon">📊</span>
-                    <span class="sidebar-item__text">Admin Dashboard</span>
-                    <span class="badge badge-accent ms-auto">ADMIN</span>
-                </a>
-            </div>
-        </c:if>
+        <%-- Group 4: Quản trị (Dành cho Admin hoặc Preview) --%>
+        <div class="sidebar-section">
+            <div class="sidebar-section__title">HỆ THỐNG QUẢN TRỊ</div>
+            <a href="${pageContext.request.contextPath}/preview/admin-dashboard.html" class="sidebar-item" style="color: var(--color-accent); font-weight: var(--fw-bold);">
+                <span class="sidebar-item__icon">📊</span>
+                <span class="sidebar-item__text">Admin Dashboard</span>
+                <span class="badge badge-accent ms-auto">ADMIN</span>
+            </a>
+        </div>
     </nav>
 
     <%-- Sidebar Footer User Status --%>
