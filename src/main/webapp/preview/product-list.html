@@ -38,13 +38,15 @@
     <!-- PREVIEW BAR -->
     <div class="preview-bar">
         <span class="badge bg-secondary text-white fw-bold">PREVIEW MODE</span>
-        <div class="d-flex gap-1 flex-wrap">
+        <div class="d-flex gap-1 flex-wrap align-items-center">
             <a href="../">🏠 Trang chủ</a>
             <a href="product-list.html" class="active">👟 Danh sách SP</a>
             <a href="product-detail.html">🔍 Chi tiết SP</a>
             <a href="cart.html">🛒 Giỏ hàng</a>
             <a href="checkout.html">💳 Thanh toán</a>
             <a href="order-history.html">📦 Đơn hàng</a>
+            <a href="../login" style="color: #60a5fa; font-weight: 700;">🔑 Đăng nhập</a>
+            <a href="../register" style="color: #60a5fa; font-weight: 700;">📝 Đăng ký</a>
             <a href="admin-dashboard.html" style="color: #93c5fd;">⚡ Admin Dashboard</a>
         </div>
     </div>
@@ -64,7 +66,9 @@
                 <input type="search" class="navbar-search__input" placeholder="Tìm giày, áo đấu..." value="Giày đá bóng">
                 <button type="submit" class="navbar-search__btn">🔍</button>
             </form>
-            <div class="navbar-nav">
+            <div class="navbar-nav d-flex align-items-center gap-2">
+                <a href="../login" class="btn btn-sm btn-outline-secondary">Đăng nhập</a>
+                <a href="../register" class="btn btn-sm btn-primary">Đăng ký</a>
                 <a href="order-history.html" class="nav-link"><span>Đơn mua</span></a>
                 <a href="cart.html" class="nav-link"><span>Giỏ hàng</span><span class="cart-badge">3</span></a>
             </div>

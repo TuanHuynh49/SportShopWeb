@@ -1,21 +1,13 @@
-<%-- header.jsp — Top Header tối giản, tinh gọn (Streamlined Top Header)
-     Bố cục:
-       - Trái: Hamburger Menu Toggle + Logo SPORTSHOP
-       - Giữa: Thanh tìm kiếm sản phẩm (Search Bar)
-       - Phải: Nút Đăng nhập/Đăng ký (hoặc User session) + Giỏ hàng
---%>
+<%-- header.jsp in views/includes --%>
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 
 <header class="site-header site-header--streamlined" id="site-header">
     <div class="container-fluid px-3 px-lg-4 header-inner">
-
-        <%-- Trái: Hamburger Toggle + Brand Logo --%>
         <div class="header-left d-flex align-items-center gap-3">
             <button class="sidebar-toggle-btn" id="sidebar-toggle" aria-label="Mở Menu Sidebar" title="Mở danh mục điều hướng">
                 <span>☰</span>
             </button>
-
             <a href="${pageContext.request.contextPath}/" class="navbar-brand m-0" aria-label="SportShop - Trang chủ">
                 <div class="navbar-brand__logo">S</div>
                 <div>
@@ -25,7 +17,6 @@
             </a>
         </div>
 
-        <%-- Giữa: Thanh tìm kiếm sản phẩm --%>
         <div class="header-center flex-grow-1 mx-3 mx-md-5">
             <form class="navbar-search" action="${pageContext.request.contextPath}/product/list" method="get" role="search">
                 <input type="search"
@@ -40,10 +31,8 @@
             </form>
         </div>
 
-        <%-- Phải: Cụm Xác thực (Login / Register / User Dropdown) + Giỏ hàng --%>
         <div class="header-right d-flex align-items-center gap-2">
             <c:choose>
-                <%-- 1. ĐÃ ĐĂNG NHẬP VAI TRÒ ADMIN --%>
                 <c:when test="${not empty sessionScope.authUser and sessionScope.authUser.admin}">
                     <a href="${pageContext.request.contextPath}/admin/dashboard" class="btn btn-sm btn-outline-primary d-none d-sm-inline-flex" id="nav-admin-panel">
                         <span class="badge badge-accent me-1">ADMIN</span>
@@ -53,10 +42,8 @@
                         <span>Đăng xuất</span>
                     </a>
                 </c:when>
-
-                <%-- 2. ĐÃ ĐĂNG NHẬP VAI TRÒ CUSTOMER --%>
                 <c:when test="${not empty sessionScope.authUser}">
-                    <a href="${pageContext.request.contextPath}/account" class="nav-link d-none d-sm-flex align-items-center" id="nav-account" title="Quản lý tài khoản">
+                    <a href="${pageContext.request.contextPath}/account" class="nav-link d-none d-sm-flex align-items-center" id="nav-account">
                         <span>👤 <strong>${sessionScope.authUser.fullName}</strong></span>
                     </a>
                     <a href="${pageContext.request.contextPath}/order/history" class="nav-link d-none d-md-flex" id="nav-orders">
@@ -66,8 +53,6 @@
                         <span>Đăng xuất</span>
                     </a>
                 </c:when>
-
-                <%-- 3. CHƯA ĐĂNG NHẬP (GUEST): Nút Đăng nhập & Đăng ký --%>
                 <c:otherwise>
                     <a href="${pageContext.request.contextPath}/login" class="btn btn-sm btn-outline-secondary" id="btn-header-login">
                         Đăng nhập
@@ -78,7 +63,6 @@
                 </c:otherwise>
             </c:choose>
 
-            <%-- Giỏ hàng --%>
             <a href="${pageContext.request.contextPath}/cart" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1 ms-1" id="nav-cart" aria-label="Giỏ hàng">
                 <span>🛒</span>
                 <span class="d-none d-md-inline">Giỏ hàng</span>
@@ -88,6 +72,5 @@
                 </span>
             </a>
         </div>
-
     </div>
 </header>

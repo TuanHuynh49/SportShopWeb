@@ -5,24 +5,43 @@
 (function () {
     'use strict';
 
-    // ── Navbar mobile toggle ──────────────────────────────────────────────────
-    function initNavbarToggle() {
-        const toggler = document.getElementById('navbar-toggler');
-        const nav = document.getElementById('navbar-nav');
-        if (!toggler || !nav) return;
+    // ── App Left Sidebar Toggle ──────────────────────────────────────────────
+    function initAppSidebarToggle() {
+        const toggleBtn = document.getElementById('sidebar-toggle');
+        const closeBtn = document.getElementById('sidebar-close-btn');
+        const sidebar = document.getElementById('app-sidebar');
+        const backdrop = document.getElementById('sidebar-backdrop');
+        const appLayout = document.querySelector('.app-layout');
 
-        toggler.addEventListener('click', () => {
-            const isOpen = nav.classList.toggle('open');
-            toggler.setAttribute('aria-expanded', isOpen);
-        });
+        if (!sidebar) return;
 
-        // Đóng menu khi click ngoài
-        document.addEventListener('click', (e) => {
-            if (!toggler.contains(e.target) && !nav.contains(e.target)) {
-                nav.classList.remove('open');
-                toggler.setAttribute('aria-expanded', 'false');
-            }
-        });
+        function openSidebar() {
+            sidebar.classList.add('show');
+            if (backdrop) backdrop.classList.add('show');
+        }
+
+        function closeSidebar() {
+            sidebar.classList.remove('show');
+            if (backdrop) backdrop.classList.remove('show');
+        }
+
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (window.innerWidth >= 992 && appLayout) {
+                    appLayout.classList.toggle('sidebar-collapsed');
+                } else {
+                    if (sidebar.classList.contains('show')) {
+                        closeSidebar();
+                    } else {
+                        openSidebar();
+                    }
+                }
+            });
+        }
+
+        if (closeBtn) closeBtn.addEventListener('click', closeSidebar);
+        if (backdrop) backdrop.addEventListener('click', closeSidebar);
     }
 
     // ── Admin sidebar toggle (mobile) ─────────────────────────────────────────
@@ -122,7 +141,7 @@
 
     // ── Init ──────────────────────────────────────────────────────────────────
     document.addEventListener('DOMContentLoaded', () => {
-        initNavbarToggle();
+        initAppSidebarToggle();
         initAdminSidebar();
         initFlashMessages();
         initActiveNav();

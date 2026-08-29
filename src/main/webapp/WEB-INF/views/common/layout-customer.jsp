@@ -1,10 +1,5 @@
-<%-- layout-customer.jsp — Khung layout dùng chung cho toàn bộ trang Customer.
-     Servlet forward tới trang con, trang con dùng jsp:include để nhúng layout này,
-     hoặc cách đơn giản hơn: Servlet setRequest attribute "pageTitle" + "bodyContent"
-     rồi forward tới layout → layout include trang con qua c:import.
-
-     Cách dùng: Servlet setAttribute("viewPath", "/WEB-INF/views/customer/home.jsp")
-                rồi forward sang layout-customer.jsp.
+<%-- layout-customer.jsp — Khung layout 2 cột (Left Sidebar + Streamlined Top Header)
+     Dùng chung cho toàn bộ giao diện Customer (MVC Architecture).
 --%>
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c"   uri="jakarta.tags.core" %>
@@ -20,52 +15,56 @@
     <%-- Favicon --%>
     <link rel="icon" href="${pageContext.request.contextPath}/assets/images/icons/favicon.ico" type="image/x-icon">
 
-    <%-- Google Fonts (preconnect để tăng tốc) --%>
+    <%-- Google Fonts --%>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <%-- Bootstrap 5 CSS (CDN) --%>
-    <link rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
-          crossorigin="anonymous">
+    <%-- Bootstrap 5 CSS --%>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
 
-    <%-- Custom CSS (thứ tự quan trọng: base → layout → components → customer) --%>
+    <%-- Custom CSS (Design Tokens COLOR_GUIDELINES.md) --%>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/base.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/layout.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/components.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/customer.css">
 
-    <%-- Extra head content từ trang con (nếu cần) --%>
+    <%-- Extra head content --%>
     ${extraHead}
 </head>
 <body>
 
-<%-- Toàn bộ trang bọc trong page-wrapper để sticky footer --%>
-<div class="page-wrapper">
+<%-- Khung App 2 cột: Sidebar bên trái + Main Content bên phải --%>
+<div class="app-layout">
 
-    <%-- HEADER --%>
-    <jsp:include page="/WEB-INF/views/common/header.jsp"/>
+    <%-- 1. LEFT SIDEBAR NAVIGATION --%>
+    <jsp:include page="/WEB-INF/views/common/sidebar.jsp"/>
 
-    <%-- FLASH MESSAGES — ngay dưới header --%>
-    <div class="container" style="padding-top:var(--space-4);">
-        <jsp:include page="/WEB-INF/views/common/flash-message.jsp"/>
-    </div>
+    <%-- 2. MAIN WRAPPER (Top Header + Body Content + Footer) --%>
+    <div class="app-main-wrapper">
 
-    <%-- MAIN CONTENT — trang con được include qua viewPath attribute --%>
-    <main class="page-main" id="main-content" role="main">
-        <c:import url="${viewPath}"/>
-    </main>
+        <%-- STREAMLINED TOP HEADER --%>
+        <jsp:include page="/WEB-INF/views/common/header.jsp"/>
 
-    <%-- FOOTER --%>
-    <jsp:include page="/WEB-INF/views/common/footer.jsp"/>
+        <%-- FLASH MESSAGES --%>
+        <div class="container-fluid px-3 px-lg-4" style="padding-top: var(--space-3, 0.75rem);">
+            <jsp:include page="/WEB-INF/views/common/flash-message.jsp"/>
+        </div>
 
-</div><%-- end page-wrapper --%>
+        <%-- MAIN PAGE CONTENT --%>
+        <main class="page-main px-3 px-lg-4" id="main-content" role="main">
+            <c:import url="${viewPath}"/>
+        </main>
+
+        <%-- FOOTER --%>
+        <jsp:include page="/WEB-INF/views/common/footer.jsp"/>
+
+    </div><%-- end app-main-wrapper --%>
+
+</div><%-- end app-layout --%>
 
 <%-- Bootstrap 5 JS Bundle --%>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc4s9bIOgUxi8T/jzmz7U6F+kI2BKYN2DpJ8SQKnEZr"
-        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <%-- Custom JS --%>
 <script>window.contextPath = '${pageContext.request.contextPath}';</script>
@@ -76,7 +75,7 @@
 <script src="${pageContext.request.contextPath}/assets/js/product-filter.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/checkout.js"></script>
 
-<%-- Extra scripts từ trang con (nếu cần thêm page-specific JS) --%>
+<%-- Extra scripts --%>
 ${extraScripts}
 
 </body>

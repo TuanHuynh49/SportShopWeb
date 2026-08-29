@@ -1,4 +1,5 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -15,10 +16,10 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
     
     <!-- Custom Design Tokens & CSS -->
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/base.css">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/layout.css">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/components.css">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/customer.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/base.css?v=2.0">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/layout.css?v=2.0">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/components.css?v=2.0">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/customer.css?v=2.0">
     
     <style>
         /* Preview Floating Bar */
@@ -59,74 +60,21 @@
 </head>
 <body>
 
-    <!-- PREVIEW QUICK NAVIGATION BAR -->
-    <div class="preview-bar">
-        <div class="d-flex align-items-center gap-2">
-            <span class="badge-mode">UI SHOWCASE</span>
-            <span class="text-white fw-bold">Sprint 1 Preview Hub</span>
-        </div>
-        <div class="d-flex gap-1 flex-wrap">
-            <a href="${pageContext.request.contextPath}/" class="active">🏠 Trang chủ</a>
-            <a href="${pageContext.request.contextPath}/preview/product-list.html">👟 Danh sách SP</a>
-            <a href="${pageContext.request.contextPath}/preview/product-detail.html">🔍 Chi tiết SP</a>
-            <a href="${pageContext.request.contextPath}/preview/cart.html">🛒 Giỏ hàng</a>
-            <a href="${pageContext.request.contextPath}/preview/checkout.html">💳 Thanh toán</a>
-            <a href="${pageContext.request.contextPath}/preview/order-history.html">📦 Đơn hàng</a>
-            <a href="${pageContext.request.contextPath}/preview/admin-dashboard.html" style="color: #93c5fd;">⚡ Admin Dashboard</a>
-        </div>
-    </div>
+    <!-- Khung App 2 cột: Sidebar bên trái + Main Content bên phải -->
+    <div class="app-layout">
 
-    <!-- SITE HEADER -->
-    <header class="site-header">
-        <div class="top-bar">
-            Miễn phí vận chuyển cho đơn hàng từ 500.000₫ • Cam kết 100% chính hãng • Hotline: 1900 6868
-        </div>
-        
-        <div class="container navbar">
-            <!-- Logo -->
-            <a href="${pageContext.request.contextPath}/" class="navbar-brand">
-                <div class="navbar-brand__logo">S</div>
-                <div>
-                    <div class="navbar-brand__text">SPORT<span class="text-accent">SHOP</span></div>
-                    <div class="navbar-brand__sub">Athletic Gear</div>
-                </div>
-            </a>
+        <!-- 1. LEFT SIDEBAR NAVIGATION -->
+        <jsp:include page="/WEB-INF/views/common/sidebar.jsp"/>
 
-            <!-- Search -->
-            <form class="navbar-search" action="${pageContext.request.contextPath}/preview/product-list.html" method="get">
-                <input type="search" class="navbar-search__input" placeholder="Tìm giày đá bóng, áo CLB, phụ kiện...">
-                <button type="submit" class="navbar-search__btn">🔍</button>
-            </form>
+        <!-- 2. MAIN CONTENT WRAPPER -->
+        <div class="app-main-wrapper">
 
-            <!-- Nav Action Links -->
-            <div class="navbar-nav">
-                <a href="${pageContext.request.contextPath}/preview/order-history.html" class="nav-link">
-                    <span>Đơn mua</span>
-                </a>
-                <a href="${pageContext.request.contextPath}/preview/cart.html" class="nav-link">
-                    <span>Giỏ hàng</span>
-                    <span class="cart-badge">3</span>
-                </a>
-            </div>
-        </div>
+            <!-- STREAMLINED TOP HEADER -->
+            <jsp:include page="/WEB-INF/views/common/header.jsp"/>
 
-        <!-- Category Menu Bar -->
-        <div class="category-nav">
-            <div class="container category-nav__inner">
-                <a href="${pageContext.request.contextPath}/preview/product-list.html" class="category-nav__link active">Tất cả sản phẩm</a>
-                <a href="${pageContext.request.contextPath}/preview/product-list.html?cat=giay" class="category-nav__link">Giày Đá Bóng</a>
-                <a href="${pageContext.request.contextPath}/preview/product-list.html?cat=ao" class="category-nav__link">Áo Thi Đấu CLB</a>
-                <a href="${pageContext.request.contextPath}/preview/product-list.html?cat=quan" class="category-nav__link">Quần Thể Thao</a>
-                <a href="${pageContext.request.contextPath}/preview/product-list.html?cat=bong" class="category-nav__link">Quả Bóng Đá</a>
-                <a href="${pageContext.request.contextPath}/preview/product-list.html?cat=phukien" class="category-nav__link">Găng Tay & Vớ</a>
-                <a href="${pageContext.request.contextPath}/preview/product-list.html?cat=sale" class="category-nav__link text-accent fw-bold">Khuyến Mãi</a>
-            </div>
-        </div>
-    </header>
-
-    <!-- HERO BANNER (Stealth Athletic) -->
-    <section class="hero">
-        <div class="container">
+            <!-- MAIN BODY -->
+            <main class="page-main px-3 px-lg-4 py-4" id="main-content">
+                <div class="container-fluid p-0">
             <div class="row align-items-center py-4">
                 <div class="col-lg-6 hero-content">
                     <div class="hero-content__badge">Bộ sưu tập mùa giải 2026</div>
@@ -400,7 +348,7 @@
             </div>
         </div>
 
-        <div class="container footer-bottom">
+        <div class="container-fluid px-3 px-lg-4 footer-bottom">
             <span>© 2026 SportShop. Thiết kế chuẩn Design Tokens & Color Guidelines.</span>
             <div>
                 <a href="${pageContext.request.contextPath}/preview/admin-dashboard.html" class="badge badge-dark text-decoration-none">Trang Quản Trị Admin →</a>
@@ -408,7 +356,11 @@
         </div>
     </footer>
 
+        </div><!-- end app-main-wrapper -->
+    </div><!-- end app-layout -->
+
     <!-- Bootstrap 5 JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="${pageContext.request.contextPath}/assets/js/main.js"></script>
 </body>
 </html>
