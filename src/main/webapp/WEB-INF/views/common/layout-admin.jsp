@@ -18,10 +18,10 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
 
     <%-- Custom CSS --%>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/base.css">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/layout.css">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/components.css">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/admin.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/base.css?v=1.0">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/layout.css?v=1.0">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/components.css?v=1.0">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/admin.css?v=1.0">
 
     ${extraHead}
 </head>
@@ -90,7 +90,7 @@
 
 <%-- JavaScripts --%>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="${pageContext.request.contextPath}/assets/js/main.js"></script>
+<script src="${pageContext.request.contextPath}/assets/js/main.js?v=1.0"></script>
 
 ${extraScripts}
 

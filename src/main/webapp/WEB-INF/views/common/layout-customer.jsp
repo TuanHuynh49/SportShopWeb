@@ -24,10 +24,10 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
 
     <%-- Custom CSS (Design Tokens COLOR_GUIDELINES.md) --%>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/base.css">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/layout.css">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/components.css">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/customer.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/base.css?v=1.0">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/layout.css?v=1.0">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/components.css?v=1.0">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/customer.css?v=1.0">
 
     <%-- Extra head content --%>
     ${extraHead}
@@ -63,17 +63,17 @@
 
 </div><%-- end app-layout --%>
 
-<%-- Bootstrap 5 JS Bundle --%>
+<%-- Bootstrap JS (CDN) --%>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-<%-- Custom JS --%>
+<%-- App Scripts with Cache-Busting Version --%>
 <script>window.contextPath = '${pageContext.request.contextPath}';</script>
-<script src="${pageContext.request.contextPath}/assets/js/main.js"></script>
-<script src="${pageContext.request.contextPath}/assets/js/cart.js"></script>
-<script src="${pageContext.request.contextPath}/assets/js/validation.js"></script>
-<script src="${pageContext.request.contextPath}/assets/js/voucher.js"></script>
-<script src="${pageContext.request.contextPath}/assets/js/product-filter.js"></script>
-<script src="${pageContext.request.contextPath}/assets/js/checkout.js"></script>
+<script src="${pageContext.request.contextPath}/assets/js/main.js?v=1.0"></script>
+<script src="${pageContext.request.contextPath}/assets/js/cart.js?v=1.0"></script>
+<script src="${pageContext.request.contextPath}/assets/js/validation.js?v=1.0"></script>
+<script src="${pageContext.request.contextPath}/assets/js/voucher.js?v=1.0"></script>
+<script src="${pageContext.request.contextPath}/assets/js/product-filter.js?v=1.0"></script>
+<script src="${pageContext.request.contextPath}/assets/js/checkout.js?v=1.0"></script>
 
 <%-- Extra scripts --%>
 ${extraScripts}

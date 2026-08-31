@@ -7,8 +7,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>404 — Không tìm thấy trang | SportShop</title>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/base.css">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/components.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/base.css?v=1.0">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/components.css?v=1.0">
     <style>
         body{display:flex;align-items:center;justify-content:center;min-height:100vh;
              background:linear-gradient(135deg,var(--color-primary) 0%,#0D3320 100%);}

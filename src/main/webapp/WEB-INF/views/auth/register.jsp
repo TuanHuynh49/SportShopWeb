@@ -13,9 +13,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- CSS Tokens & Styles -->
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/base.css">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/components.css">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/auth.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/base.css?v=1.0">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/components.css?v=1.0">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/auth.css?v=1.0">
+    <script src="${pageContext.request.contextPath}/assets/js/validation.js?v=1.0"></script>
 </head>
 <body class="auth-page">
 
