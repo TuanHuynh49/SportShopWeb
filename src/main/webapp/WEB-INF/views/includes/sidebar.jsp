@@ -21,62 +21,59 @@
                 <span class="sidebar-item__icon">🏠</span>
                 <span class="sidebar-item__text">Trang chủ</span>
             </a>
-            <a href="${pageContext.request.contextPath}/preview/product-list.html" class="sidebar-item">
+            <a href="${pageContext.request.contextPath}/product/list" class="sidebar-item">
                 <span class="sidebar-item__icon">👟</span>
                 <span class="sidebar-item__text">Tất cả sản phẩm</span>
-            </a>
-            <a href="${pageContext.request.contextPath}/preview/product-list.html?cat=sale" class="sidebar-item">
-                <span class="sidebar-item__icon">⚡</span>
-                <span class="sidebar-item__text text-accent fw-bold">Khuyến mãi Hot</span>
             </a>
         </div>
 
         <div class="sidebar-section">
             <div class="sidebar-section__title">DANH MỤC THỂ THAO</div>
-            <a href="${pageContext.request.contextPath}/preview/product-list.html?cat=giay" class="sidebar-item">
-                <span class="sidebar-item__icon">👟</span>
-                <span class="sidebar-item__text">Giày Đá Bóng</span>
-            </a>
-            <a href="${pageContext.request.contextPath}/preview/product-list.html?cat=ao" class="sidebar-item">
-                <span class="sidebar-item__icon">👕</span>
-                <span class="sidebar-item__text">Áo Thi Đấu CLB</span>
-            </a>
-            <a href="${pageContext.request.contextPath}/preview/product-list.html?cat=quan" class="sidebar-item">
-                <span class="sidebar-item__icon">🩳</span>
-                <span class="sidebar-item__text">Quần Thể Thao</span>
-            </a>
-            <a href="${pageContext.request.contextPath}/preview/product-list.html?cat=bong" class="sidebar-item">
-                <span class="sidebar-item__icon">⚽</span>
-                <span class="sidebar-item__text">Quả Bóng Đá</span>
-            </a>
-            <a href="${pageContext.request.contextPath}/preview/product-list.html?cat=phukien" class="sidebar-item">
-                <span class="sidebar-item__icon">🧤</span>
-                <span class="sidebar-item__text">Găng Tay & Vớ</span>
-            </a>
+            <c:choose>
+                <c:when test="${not empty categories}">
+                    <c:forEach items="${categories}" var="cat">
+                        <div class="sidebar-dropdown">
+                            <a href="${pageContext.request.contextPath}/product/list?categoryId=${cat.id}" class="sidebar-item">
+                                <span class="sidebar-item__icon">${empty cat.icon ? '⚽' : cat.icon}</span>
+                                <span class="sidebar-item__text">${cat.name}</span>
+                                <c:if test="${not empty cat.subCategories}">
+                                    <span class="sidebar-item__arrow">›</span>
+                                </c:if>
+                            </a>
+                            <c:if test="${not empty cat.subCategories}">
+                                <div class="sidebar-flyout">
+                                    <div class="flyout-header">
+                                        <div class="flyout-header__title">${cat.name}</div>
+                                    </div>
+                                    <div class="flyout-list">
+                                        <c:forEach items="${cat.subCategories}" var="sub">
+                                            <a href="${pageContext.request.contextPath}/product/list?categoryId=${sub.id}" class="flyout-item">
+                                                <span class="flyout-item__text">${sub.name}</span>
+                                            </a>
+                                        </c:forEach>
+                                    </div>
+                                </div>
+                            </c:if>
+                        </div>
+                    </c:forEach>
+                </c:when>
+                <c:otherwise>
+                    <div class="px-3 py-2 text-xs text-muted">
+                        <em>(Bảng categories đang trống)</em>
+                    </div>
+                </c:otherwise>
+            </c:choose>
         </div>
 
         <div class="sidebar-section">
             <div class="sidebar-section__title">MUA SẮM & ĐƠN HÀNG</div>
-            <a href="${pageContext.request.contextPath}/preview/cart.html" class="sidebar-item">
+            <a href="${pageContext.request.contextPath}/cart" class="sidebar-item">
                 <span class="sidebar-item__icon">🛒</span>
                 <span class="sidebar-item__text">Giỏ hàng</span>
             </a>
-            <a href="${pageContext.request.contextPath}/preview/checkout.html" class="sidebar-item">
-                <span class="sidebar-item__icon">💳</span>
-                <span class="sidebar-item__text">Thanh toán</span>
-            </a>
-            <a href="${pageContext.request.contextPath}/preview/order-history.html" class="sidebar-item">
+            <a href="${pageContext.request.contextPath}/order/history" class="sidebar-item">
                 <span class="sidebar-item__icon">📦</span>
                 <span class="sidebar-item__text">Đơn mua của tôi</span>
-            </a>
-        </div>
-
-        <div class="sidebar-section">
-            <div class="sidebar-section__title">HỆ THỐNG QUẢN TRỊ</div>
-            <a href="${pageContext.request.contextPath}/preview/admin-dashboard.html" class="sidebar-item" style="color: var(--color-accent); font-weight: var(--fw-bold);">
-                <span class="sidebar-item__icon">📊</span>
-                <span class="sidebar-item__text">Admin Dashboard</span>
-                <span class="badge badge-accent ms-auto">ADMIN</span>
             </a>
         </div>
     </nav>

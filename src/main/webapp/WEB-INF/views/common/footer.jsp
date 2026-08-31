@@ -1,6 +1,4 @@
-<%-- footer.jsp — Footer Customer (dark theme)
-     Include trong layout-customer.jsp.
---%>
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c"   uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 

@@ -1,7 +1,4 @@
-<%-- flash-message.jsp — Hiển thị flash message 1 lần rồi xoá.
-     Include vào layout-customer.jsp và layout-admin.jsp ngay sau <body>.
-     Tuân thủ: không scriptlet, dùng JSTL + EL.
---%>
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 
 <c:if test="${not empty sessionScope.flashSuccess}">

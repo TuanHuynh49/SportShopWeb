@@ -303,7 +303,7 @@ public class AuthServlet extends HttpServlet {
 
         // Nếu là ADMIN -> chuyển hướng sang Dashboard quản trị
         if (user != null && user.isAdmin()) {
-            response.sendRedirect(request.getContextPath() + "/preview/admin-dashboard.html");
+            response.sendRedirect(request.getContextPath() + "/admin/dashboard");
             return;
         }
 

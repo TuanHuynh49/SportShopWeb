@@ -1,5 +1,6 @@
-<%-- layout-admin.jsp — Khung layout dùng chung cho toàn bộ trang Admin.
-     Sử dụng tương tự layout-customer.jsp: Servlet set viewPath → forward tới đây.
+<%-- layout-admin.jsp — Khung layout Admin đồng bộ cấu trúc 2 cột với Customer
+     - Cột trái: Left Sidebar Navigation cố định, hỗ trợ thu gọn/mở rộng.
+     - Cột phải: Top Header tinh gọn (Hamburger, Breadcrumbs, User Avatar) + Nội dung chính.
 --%>
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c"   uri="jakarta.tags.core" %>
@@ -10,13 +11,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
-    <title>${not empty pageTitle ? pageTitle : 'Admin'} | SportShop Admin</title>
+    <title>${not empty pageTitle ? pageTitle : 'Quản Trị Hệ Thống'} | SportShop Admin</title>
 
-    <%-- Bootstrap 5 --%>
-    <link rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
-          crossorigin="anonymous">
+    <%-- Google Fonts & Bootstrap 5 --%>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
 
     <%-- Custom CSS --%>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/base.css">
@@ -26,104 +25,72 @@
 
     ${extraHead}
 </head>
-<body style="background-color:var(--color-bg);">
+<body>
 
-<div class="admin-layout">
+<div class="app-layout" id="app-layout">
 
-    <%-- SIDEBAR --%>
+    <%-- 1. LEFT SIDEBAR NAVIGATION CHO ADMIN --%>
     <jsp:include page="/WEB-INF/views/common/admin-sidebar.jsp"/>
 
-    <%-- CONTENT AREA --%>
-    <div class="admin-content">
+    <%-- 2. MAIN WRAPPER (TOPBAR + CONTENT) --%>
+    <div class="app-main-wrapper">
 
-        <%-- Topbar --%>
-        <div class="admin-topbar">
-            <div class="admin-topbar__left">
-                <%-- Mobile sidebar toggle --%>
-                <button id="admin-sidebar-toggle"
-                        aria-label="Toggle sidebar"
-                        style="background:none;border:none;cursor:pointer;font-size:1.25rem;color:var(--color-text);padding:4px;">
-                    ☰
-                </button>
-                <div>
-                    <div class="admin-topbar__title">${not empty pageTitle ? pageTitle : 'Dashboard'}</div>
-                    <div class="admin-topbar__breadcrumb">${not empty breadcrumb ? breadcrumb : 'Admin'}</div>
-                </div>
-            </div>
-            <div class="admin-topbar__right">
-                <%-- Notification bell (placeholder) --%>
-                <button style="background:none;border:none;cursor:pointer;font-size:1.25rem;color:var(--color-text-muted);position:relative;"
-                        aria-label="Thông báo">
-                    🔔
-                </button>
-                <%-- Admin user --%>
-                <div class="admin-user" tabindex="0" role="button" aria-label="Tài khoản admin">
-                    <div class="admin-user__avatar">
-                        <c:choose>
-                            <c:when test="${not empty sessionScope.adminUser}">
-                                ${fn:substring(sessionScope.adminUser.fullName, 0, 1)}
-                            </c:when>
-                            <c:otherwise>A</c:otherwise>
-                        </c:choose>
-                    </div>
+        <%-- Top Header Admin Tinh Gọn --%>
+        <header class="site-header site-header--streamlined" id="site-header">
+            <div class="container-fluid px-3 px-lg-4 header-inner">
+                <%-- Trái: Hamburger Toggle + Tiêu đề Phân Hệ --%>
+                <div class="header-left d-flex align-items-center gap-3">
+                    <button class="sidebar-toggle-btn" id="sidebar-toggle" aria-label="Mở/Đóng Menu" title="Mở/Đóng Menu">
+                        <span>☰</span>
+                    </button>
                     <div>
-                        <div class="admin-user__name">
-                            <c:choose>
-                                <c:when test="${not empty sessionScope.adminUser}">${sessionScope.adminUser.fullName}</c:when>
-                                <c:otherwise>Admin</c:otherwise>
-                            </c:choose>
-                        </div>
-                        <div class="admin-user__role">Quản trị viên</div>
+                        <div class="fw-bold text-sm text-primary">${not empty pageTitle ? pageTitle : 'Dashboard Quản Trị'}</div>
+                        <div class="text-xs text-muted">SportShop Admin Portal • Mùa giải 2026</div>
                     </div>
                 </div>
-                <a href="${pageContext.request.contextPath}/home" target="_blank"
-                   style="font-size:var(--fs-small);color:var(--color-text-muted);">
-                    🌐 Xem shop
-                </a>
+
+                <%-- Phải: Nút Xem Shop + Thông tin Admin User --%>
+                <div class="header-right d-flex align-items-center gap-3">
+                    <a href="${pageContext.request.contextPath}/" target="_blank" class="btn btn-sm btn-outline-secondary d-none d-sm-inline-flex align-items-center gap-1">
+                        <span>🌐</span> Xem Website Khách
+                    </a>
+
+                    <div class="dropdown">
+                        <div class="d-flex align-items-center gap-2" role="button" data-bs-toggle="dropdown">
+                            <div class="avatar-circle" style="width: 34px; height: 34px; border-radius: 8px; background: #0f172a; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem;">
+                                ${empty sessionScope.authUser ? 'A' : sessionScope.authUser.fullName.substring(0, 1).toUpperCase()}
+                            </div>
+                            <div class="d-none d-md-block text-start">
+                                <div class="fw-bold text-xs text-primary">${empty sessionScope.authUser ? 'Quản Trị Viên' : sessionScope.authUser.fullName}</div>
+                                <div class="text-xs text-accent">ADMINISTRATOR</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <a href="${pageContext.request.contextPath}/logout" class="btn btn-sm btn-outline-danger" title="Đăng Xuất">
+                        Đăng Xuất
+                    </a>
+                </div>
             </div>
-        </div>
+        </header>
 
-        <%-- Flash messages --%>
-        <div style="padding:var(--space-4) var(--space-6) 0;">
-            <jsp:include page="/WEB-INF/views/common/flash-message.jsp"/>
-        </div>
-
-        <%-- PAGE CONTENT --%>
-        <main class="admin-main" id="admin-main-content" role="main">
-            <c:import url="${viewPath}"/>
+        <%-- MAIN CONTENT BODY --%>
+        <main class="app-content p-3 p-lg-4" id="main-content" role="main">
+            <jsp:include page="${viewPath}"/>
         </main>
 
-    </div><%-- end admin-content --%>
+        <%-- FOOTER GỌN NHẸ CHO ADMIN --%>
+        <footer class="py-3 px-4 border-top bg-surface text-center text-xs text-muted">
+            SportShop Admin Management System © 2026 — Kiến trúc chuẩn OR-Mapping & MVC Jakarta EE
+        </footer>
 
-</div><%-- end admin-layout --%>
+    </div><%-- end app-main-wrapper --%>
 
-<%-- Bootstrap JS --%>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc4s9bIOgUxi8T/jzmz7U6F+kI2BKYN2DpJ8SQKnEZr"
-        crossorigin="anonymous"></script>
+</div><%-- end app-layout --%>
 
-<%-- Chart.js (cho dashboard/report — lazy load) --%>
-<c:if test="${loadChartJs}">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
-    <script src="${pageContext.request.contextPath}/assets/js/admin/admin-chart.js"></script>
-</c:if>
-
-<script>window.contextPath = '${pageContext.request.contextPath}';</script>
+<%-- JavaScripts --%>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/main.js"></script>
-<script src="${pageContext.request.contextPath}/assets/js/validation.js"></script>
-<script src="${pageContext.request.contextPath}/assets/js/admin/admin-product.js"></script>
-
-<%-- Active nav item highlight theo URL --%>
-<script>
-(function(){
-    var path = window.location.pathname;
-    document.querySelectorAll('.admin-nav-item').forEach(function(el){
-        if(el.getAttribute('href') && path.includes(el.getAttribute('href').split('?')[0])){
-            el.classList.add('active');
-        }
-    });
-})();
-</script>
 
 ${extraScripts}
 

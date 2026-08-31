@@ -26,10 +26,7 @@
         <location>/WEB-INF/views/common/error-500.jsp</location>
     </error-page>
 
-    <!-- ===================== CHARACTER ENCODING =====================
-         Dùng SetCharacterEncodingFilter của Tomcat (concrete class, built-in).
-         Đảm bảo mọi request/response đều dùng UTF-8.
-    ===================== -->
+    <!-- ===================== CHARACTER ENCODING ===================== -->
     <filter>
         <filter-name>CharacterEncodingFilter</filter-name>
         <filter-class>org.apache.catalina.filters.SetCharacterEncodingFilter</filter-class>
@@ -46,5 +43,94 @@
         <filter-name>CharacterEncodingFilter</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
+
+    <!-- ===================== AUTHENTICATION FILTER ===================== -->
+    <filter>
+        <filter-name>AuthFilter</filter-name>
+        <filter-class>com.sportshop.filter.AuthFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>AuthFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+    <!-- ===================== SERVLET MAPPINGS ===================== -->
+    <!-- 1. HomeServlet -->
+    <servlet>
+        <servlet-name>HomeServlet</servlet-name>
+        <servlet-class>com.sportshop.controller.HomeServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>HomeServlet</servlet-name>
+        <url-pattern>/home</url-pattern>
+    </servlet-mapping>
+
+    <!-- 2. AuthServlet -->
+    <servlet>
+        <servlet-name>AuthServlet</servlet-name>
+        <servlet-class>com.sportshop.controller.AuthServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AuthServlet</servlet-name>
+        <url-pattern>/login</url-pattern>
+        <url-pattern>/register</url-pattern>
+        <url-pattern>/logout</url-pattern>
+        <url-pattern>/auth</url-pattern>
+    </servlet-mapping>
+
+    <!-- 3. ProductListServlet -->
+    <servlet>
+        <servlet-name>ProductListServlet</servlet-name>
+        <servlet-class>com.sportshop.controller.ProductListServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ProductListServlet</servlet-name>
+        <url-pattern>/product/list</url-pattern>
+        <url-pattern>/products</url-pattern>
+    </servlet-mapping>
+
+    <!-- 4. ProductDetailServlet -->
+    <servlet>
+        <servlet-name>ProductDetailServlet</servlet-name>
+        <servlet-class>com.sportshop.controller.ProductDetailServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ProductDetailServlet</servlet-name>
+        <url-pattern>/product/detail</url-pattern>
+        <url-pattern>/product</url-pattern>
+    </servlet-mapping>
+
+    <!-- 5. CartServlet -->
+    <servlet>
+        <servlet-name>CartServlet</servlet-name>
+        <servlet-class>com.sportshop.controller.CartServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>CartServlet</servlet-name>
+        <url-pattern>/cart</url-pattern>
+        <url-pattern>/cart/*</url-pattern>
+    </servlet-mapping>
+
+    <!-- 6. OrderHistoryServlet -->
+    <servlet>
+        <servlet-name>OrderHistoryServlet</servlet-name>
+        <servlet-class>com.sportshop.controller.OrderHistoryServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>OrderHistoryServlet</servlet-name>
+        <url-pattern>/order/history</url-pattern>
+        <url-pattern>/orders</url-pattern>
+    </servlet-mapping>
+
+    <!-- 7. AdminDashboardServlet -->
+    <servlet>
+        <servlet-name>AdminDashboardServlet</servlet-name>
+        <servlet-class>com.sportshop.controller.AdminDashboardServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AdminDashboardServlet</servlet-name>
+        <url-pattern>/admin/dashboard</url-pattern>
+        <url-pattern>/admin</url-pattern>
+    </servlet-mapping>
 
 </web-app>
