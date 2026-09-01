@@ -105,7 +105,25 @@
 
 html {
     font-size: 16px;
+    box-sizing: border-box;
     scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+}
+
+/* Modern Minimalist Custom Scrollbars */
+::-webkit-scrollbar {
+    width: 7px;
+    height: 7px;
+}
+::-webkit-scrollbar-track {
+    background: var(--bg-main, #f8fafc);
+}
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
 }
 
 body {

@@ -93,6 +93,15 @@
                 <button type="submit" class="auth-btn-submit" id="btnSubmit">
                     ĐĂNG NHẬP
                 </button>
+
+                <!-- Divider & Guest Continue Button -->
+                <div class="auth-divider">
+                    <span>HOẶC</span>
+                </div>
+
+                <a href="${pageContext.request.contextPath}/" class="auth-btn-guest" title="Tiếp tục xem trang với tư cách Khách">
+                    <span>🌐</span> Tiếp tục xem trang (Không cần tài khoản)
+                </a>
             </form>
 
             <!-- Test Accounts Quick Info Box -->

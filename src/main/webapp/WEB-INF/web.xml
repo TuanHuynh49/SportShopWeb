@@ -122,7 +122,7 @@
         <url-pattern>/orders</url-pattern>
     </servlet-mapping>
 
-    <!-- 7. AdminDashboardServlet -->
+    <!-- 7. Admin Servlets -->
     <servlet>
         <servlet-name>AdminDashboardServlet</servlet-name>
         <servlet-class>com.sportshop.controller.AdminDashboardServlet</servlet-class>
@@ -131,6 +131,86 @@
         <servlet-name>AdminDashboardServlet</servlet-name>
         <url-pattern>/admin/dashboard</url-pattern>
         <url-pattern>/admin</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>AdminReportServlet</servlet-name>
+        <servlet-class>com.sportshop.controller.AdminReportServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AdminReportServlet</servlet-name>
+        <url-pattern>/admin/report</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>AdminProductServlet</servlet-name>
+        <servlet-class>com.sportshop.controller.AdminProductServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AdminProductServlet</servlet-name>
+        <url-pattern>/admin/product</url-pattern>
+        <url-pattern>/admin/product/new</url-pattern>
+        <url-pattern>/admin/product/edit</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>AdminCategoryServlet</servlet-name>
+        <servlet-class>com.sportshop.controller.AdminCategoryServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AdminCategoryServlet</servlet-name>
+        <url-pattern>/admin/category</url-pattern>
+        <url-pattern>/admin/brand</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>AdminInventoryServlet</servlet-name>
+        <servlet-class>com.sportshop.controller.AdminInventoryServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AdminInventoryServlet</servlet-name>
+        <url-pattern>/admin/inventory</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>AdminOrderServlet</servlet-name>
+        <servlet-class>com.sportshop.controller.AdminOrderServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AdminOrderServlet</servlet-name>
+        <url-pattern>/admin/order</url-pattern>
+        <url-pattern>/admin/orders</url-pattern>
+        <url-pattern>/admin/order/detail</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>AdminCustomerServlet</servlet-name>
+        <servlet-class>com.sportshop.controller.AdminCustomerServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AdminCustomerServlet</servlet-name>
+        <url-pattern>/admin/customer</url-pattern>
+        <url-pattern>/admin/customers</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>AdminVoucherServlet</servlet-name>
+        <servlet-class>com.sportshop.controller.AdminVoucherServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AdminVoucherServlet</servlet-name>
+        <url-pattern>/admin/voucher</url-pattern>
+        <url-pattern>/admin/voucher/new</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>AdminReviewServlet</servlet-name>
+        <servlet-class>com.sportshop.controller.AdminReviewServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AdminReviewServlet</servlet-name>
+        <url-pattern>/admin/review</url-pattern>
+        <url-pattern>/admin/reviews</url-pattern>
     </servlet-mapping>
 
 </web-app>

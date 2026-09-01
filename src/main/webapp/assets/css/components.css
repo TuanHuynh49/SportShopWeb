@@ -217,8 +217,33 @@
     gap: var(--space-2);
     margin-top: auto;
     padding-top: var(--space-2);
-    border-top: 1px solid var(--border-subtle);
+.product-card {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.25s ease;
 }
+.product-card:hover {
+    transform: translateY(-5px);
+    border-color: #cbd5e1;
+    box-shadow: 0 14px 28px -6px rgba(15, 23, 42, 0.12), 0 4px 10px -2px rgba(15, 23, 42, 0.05);
+}
+.product-card__thumb {
+    position: relative;
+    overflow: hidden;
+    background-color: var(--bg-subtle);
+}
+.product-card__thumb img {
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.product-card:hover .product-card__thumb img {
+    transform: scale(1.06);
+}
+
 .product-card__price {
     font-size: 1rem;
     font-weight: var(--fw-bold);
@@ -251,11 +276,16 @@
 /* ══════════════════════════════════════════════════════════════════════════════
    3. BADGES & PILLS
    ══════════════════════════════════════════════════════════════════════════════ */
+@keyframes pulseGlow {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.06); }
+}
+
 .badge {
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    padding: 0.2rem 0.55rem;
+    padding: 0.25rem 0.6rem;
     border-radius: var(--radius-sm);
     font-size: 0.75rem;
     font-weight: var(--fw-semibold);
@@ -264,7 +294,7 @@
 }
 .badge-dark      { background: var(--color-primary); color: var(--text-inverse); }
 .badge-accent    { background: var(--color-accent-subtle); color: var(--color-accent); border: 1px solid rgba(37, 99, 235, 0.2); }
-.badge-discount  { background: var(--color-primary); color: var(--text-inverse); font-weight: var(--fw-bold); }
+.badge-discount  { background: var(--color-error); color: var(--text-inverse); font-weight: var(--fw-bold); animation: pulseGlow 2.5s infinite ease-in-out; }
 .badge-new       { background: var(--color-accent); color: var(--text-inverse); font-weight: var(--fw-bold); }
 
 /* Status Badges */

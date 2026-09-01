@@ -1,5 +1,5 @@
-<%-- admin-sidebar.jsp — Left Sidebar Admin (Đồng bộ chuẩn giao diện với Customer)
-     Tuân thủ 8 Requirements Admin trong OR-Mapping (REQ-A01 -> REQ-A08)
+<%-- admin-sidebar.jsp — Left Sidebar Admin Navigation
+     Chuẩn hóa 8 Requirements Admin trong OR-Mapping (REQ-A01 -> REQ-A08)
 --%>
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
@@ -22,11 +22,11 @@
         <%-- Group 1: Tổng quan & Báo cáo (REQ-A08) --%>
         <div class="sidebar-section">
             <div class="sidebar-section__title">TỔNG QUAN & BÁO CÁO</div>
-            <a href="${pageContext.request.contextPath}/admin/dashboard" class="sidebar-item ${empty param.section ? 'active' : ''}">
+            <a href="${pageContext.request.contextPath}/admin/dashboard" class="sidebar-item ${param.activeTab == 'dashboard' or empty param.activeTab and requestScope.currentTab == 'dashboard' ? 'active' : ''}">
                 <span class="sidebar-item__icon">📊</span>
                 <span class="sidebar-item__text">Dashboard Thống Kê</span>
             </a>
-            <a href="${pageContext.request.contextPath}/admin/dashboard?section=report" class="sidebar-item">
+            <a href="${pageContext.request.contextPath}/admin/report" class="sidebar-item ${requestScope.currentTab == 'report' ? 'active' : ''}">
                 <span class="sidebar-item__icon">📈</span>
                 <span class="sidebar-item__text">Báo Cáo Doanh Thu</span>
             </a>
@@ -35,36 +35,36 @@
         <%-- Group 2: Quản lý Sản phẩm & Kho (REQ-A01, REQ-A02, REQ-A03) --%>
         <div class="sidebar-section">
             <div class="sidebar-section__title">SẢN PHẨM & TỒN KHO</div>
-            <a href="${pageContext.request.contextPath}/product/list" class="sidebar-item">
+            <a href="${pageContext.request.contextPath}/admin/product" class="sidebar-item ${requestScope.currentTab == 'product' ? 'active' : ''}">
                 <span class="sidebar-item__icon">👟</span>
                 <span class="sidebar-item__text">Danh Sách Sản Phẩm</span>
             </a>
-            <a href="${pageContext.request.contextPath}/admin/dashboard?section=category" class="sidebar-item">
+            <a href="${pageContext.request.contextPath}/admin/category" class="sidebar-item ${requestScope.currentTab == 'category' ? 'active' : ''}">
                 <span class="sidebar-item__icon">🗂</span>
                 <span class="sidebar-item__text">Danh Mục & Thương Hiệu</span>
             </a>
-            <a href="${pageContext.request.contextPath}/admin/dashboard?section=inventory" class="sidebar-item">
+            <a href="${pageContext.request.contextPath}/admin/inventory" class="sidebar-item ${requestScope.currentTab == 'inventory' ? 'active' : ''}">
                 <span class="sidebar-item__icon">📦</span>
                 <span class="sidebar-item__text">Tồn Kho & Biến Thể</span>
             </a>
         </div>
 
-        <%-- Group 3: Quản lý Đơn hàng & Khách hàng (REQ-A04, REQ-A05) --%>
+        <%-- Group 3: Quản lý Đơn hàng & Khách hàng (REQ-A04, REQ-A05, REQ-A06, REQ-A07) --%>
         <div class="sidebar-section">
             <div class="sidebar-section__title">KINH DOANH & ĐƠN HÀNG</div>
-            <a href="${pageContext.request.contextPath}/order/history" class="sidebar-item">
+            <a href="${pageContext.request.contextPath}/admin/order" class="sidebar-item ${requestScope.currentTab == 'order' ? 'active' : ''}">
                 <span class="sidebar-item__icon">🧾</span>
                 <span class="sidebar-item__text">Quản Lý Đơn Hàng</span>
             </a>
-            <a href="${pageContext.request.contextPath}/admin/dashboard?section=customer" class="sidebar-item">
+            <a href="${pageContext.request.contextPath}/admin/customer" class="sidebar-item ${requestScope.currentTab == 'customer' ? 'active' : ''}">
                 <span class="sidebar-item__icon">👥</span>
                 <span class="sidebar-item__text">Danh Sách Khách Hàng</span>
             </a>
-            <a href="${pageContext.request.contextPath}/admin/dashboard?section=voucher" class="sidebar-item">
+            <a href="${pageContext.request.contextPath}/admin/voucher" class="sidebar-item ${requestScope.currentTab == 'voucher' ? 'active' : ''}">
                 <span class="sidebar-item__icon">🎫</span>
                 <span class="sidebar-item__text">Mã Giảm Giá (Voucher)</span>
             </a>
-            <a href="${pageContext.request.contextPath}/admin/dashboard?section=review" class="sidebar-item">
+            <a href="${pageContext.request.contextPath}/admin/review" class="sidebar-item ${requestScope.currentTab == 'review' ? 'active' : ''}">
                 <span class="sidebar-item__icon">⭐</span>
                 <span class="sidebar-item__text">Duyệt Đánh Giá (Review)</span>
             </a>
@@ -73,7 +73,7 @@
         <%-- Group 4: Trở về trang khách --%>
         <div class="sidebar-section">
             <div class="sidebar-section__title">HỆ THỐNG</div>
-            <a href="${pageContext.request.contextPath}/" class="sidebar-item text-accent fw-bold">
+            <a href="${pageContext.request.contextPath}/" target="_blank" class="sidebar-item text-accent fw-bold">
                 <span class="sidebar-item__icon">🌐</span>
                 <span class="sidebar-item__text">Xem Website Cửa Hàng</span>
             </a>

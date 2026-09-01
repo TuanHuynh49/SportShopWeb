@@ -59,6 +59,19 @@ public class UserDAO {
         saveUser(customer);
     }
 
+    /**
+     * Lấy toàn bộ danh sách khách hàng
+     */
+    public java.util.List<User> findAllCustomers() {
+        java.util.List<User> list = new java.util.ArrayList<>();
+        for (User u : userById.values()) {
+            if (u.getRole() == Role.CUSTOMER) {
+                list.add(u);
+            }
+        }
+        return list;
+    }
+
     private void saveUser(User user) {
         userByEmail.put(user.getEmail().toLowerCase().trim(), user);
         userById.put(user.getId(), user);
