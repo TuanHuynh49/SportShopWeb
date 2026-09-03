@@ -1,0 +1,4 @@
+# Enforce LF for shell scripts and Dockerfiles so Linux containers execute properly
+*.sh text eol=lf
+Dockerfile text eol=lf
+*.sql text eol=lf

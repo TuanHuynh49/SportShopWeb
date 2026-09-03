@@ -17,8 +17,15 @@ WORKDIR /usr/local/tomcat
 # Xóa các app mặc định của Tomcat
 RUN rm -rf webapps/*
 
-# Copy file war vừa build vào Tomcat (đặt tên là ROOT.war để truy cập trực tiếp qua cổng 8080)
+# Copy file war vừa build vào Tomcat (đặt tên là ROOT.war để truy cập trực tiếp qua root path /)
 COPY --from=build /app/target/*.war webapps/ROOT.war
 
+# Copy script khởi động linh hoạt cổng $PORT cho Render
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+# Render sử dụng biến PORT (mặc định 8080)
+ENV PORT=8080
 EXPOSE 8080
-CMD ["catalina.sh", "run"]
+
+ENTRYPOINT ["docker-entrypoint.sh"]
