@@ -10,21 +10,21 @@ import java.io.Serializable;
  * @author Anh Tuan
  */
 public class Customer implements Serializable{
-    private String customerId;
+    private int customerId;
     private User user;
     private String firstName;
     private String lastName;
     private String gender;
     
     public Customer(){
-        customerId = "";
+        customerId = 0;
         user = new User();
         firstName = "";
         lastName = "";
         gender = "";
     }
     
-    public Customer(String customerId, User user, String firstName, String lastName, String gender){
+    public Customer(int customerId, User user, String firstName, String lastName, String gender){
         this.customerId = customerId;
         this.user = user;
         this.firstName = firstName;
@@ -32,11 +32,11 @@ public class Customer implements Serializable{
         this.gender = gender;
     }
     
-    public String getCustomerId() {
+    public int getCustomerId() {
         return customerId;
     }
     
-    public void setCustomerId(String customerId) {
+    public void setCustomerId(int customerId) {
         this.customerId = customerId;
     }
     

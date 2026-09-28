@@ -11,22 +11,21 @@ import java.io.Serializable;
  */
 public class Adress implements Serializable{
     
-    private String addressId;
+    private int addressId;
     private String province;
     private String ward;
     private String detailAddress;
     private boolean isDefault;
 
     public Adress() {
-        this.addressId = "";
+        this.addressId = 0;
         this.province = "";
         this.ward = "";
         this.detailAddress = "";
         this.isDefault = false;
     }
 
-    public Adress(String addressId, String province, String ward,
-                  String detailAddress, boolean isDefault) {
+    public Adress(int addressId, String province, String ward, String detailAddress, boolean isDefault) {
         this.addressId = addressId;
         this.province = province;
         this.ward = ward;
@@ -34,11 +33,11 @@ public class Adress implements Serializable{
         this.isDefault = isDefault;
     }
 
-    public String getAddressId() {
+    public int getAddressId() {
         return addressId;
     }
 
-    public void setAddressId(String addressId) {
+    public void setAddressId(int addressId) {
         this.addressId = addressId;
     }
 

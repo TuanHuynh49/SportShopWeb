@@ -25,9 +25,7 @@ public class MembershipTier implements Serializable{
         this.pointMultiplier = 0.0f;
     }
 
-    public MembershipTier(int tierId, String tierName,
-                          long minSpending, float discountRate,
-                          float pointMultiplier) {
+    public MembershipTier(int tierId, String tierName, long minSpending, float discountRate, float pointMultiplier) {
         this.tierId = tierId;
         this.tierName = tierName;
         this.minSpending = minSpending;

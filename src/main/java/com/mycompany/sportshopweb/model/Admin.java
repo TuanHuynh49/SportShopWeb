@@ -11,27 +11,27 @@ import java.io.Serializable;
  */
 public class Admin implements Serializable{
     
-    private String adminId;
+    private int adminId;
     private User user;
     private Role role;
 
     public Admin() {
-        this.adminId = "";
+        this.adminId = 0;
         this.user = new User();
         this.role = new Role();
     }
 
-    public Admin(String adminId, User user, Role role) {
+    public Admin(int adminId, User user, Role role) {
         this.adminId = adminId;
         this.user = user;
         this.role = role;
     }
 
-    public String getAdminId() {
+    public int getAdminId() {
         return adminId;
     }
 
-    public void setAdminId(String adminId) {
+    public void setAdminId(int adminId) {
         this.adminId = adminId;
     }
 
