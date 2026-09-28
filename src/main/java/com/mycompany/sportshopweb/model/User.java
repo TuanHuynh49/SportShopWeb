@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
  */
 public class User implements Serializable{
     
-    private int userId;
+    private String userId;
     private String phone;
     private String email;
     private String passwordHash;
@@ -20,8 +20,12 @@ public class User implements Serializable{
     
     // Constructor 0 tham số
     public User() {
-        this.status = AccountStatus.ACTIVE;
-        this.createdAt = LocalDateTime.now();
+        userId = "";
+        phone = "";
+        email = "";
+        passwordHash = "";
+        status = AccountStatus.ACTIVE;
+        createdAt = LocalDateTime.now();
     }
 
     // Constructor có tham số
@@ -33,11 +37,11 @@ public class User implements Serializable{
         this.createdAt = LocalDateTime.now();
     }
     
-    public int getUserId() {
+    public String getUserId() {
         return userId;
     }
 
-    public void setUserId(int userId) {
+    public void setUserId(String userId) {
         this.userId = userId;
     }
 
