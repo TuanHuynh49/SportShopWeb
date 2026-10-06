@@ -18,13 +18,10 @@ public class User implements Serializable{
     private AccountStatus status;
     private LocalDateTime createdAt;
     
+    // Constructor 0 tham số
     public User() {
-        userId = 0;
-        phone = "";
-        email = "";
-        passwordHash = "";
-        status = AccountStatus.ACTIVE;
-        createdAt = LocalDateTime.now();
+        this.status = AccountStatus.ACTIVE;
+        this.createdAt = LocalDateTime.now();
     }
 
     // Constructor có tham số
