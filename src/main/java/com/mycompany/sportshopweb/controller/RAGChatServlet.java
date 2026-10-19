@@ -51,7 +51,10 @@ public class RAGChatServlet extends HttpServlet {
                 File ragScript = new File(pythonRagDir, "query_rag.py");
 
                 // 3. Chọn lệnh Python (Ưu tiên gọi 'python' hoặc 'python3' từ hệ thống đã cài sẵn môi trường)
-                String pythonCommand = "python"; 
+                String pythonCommand = new File(
+                 pythonRagDir,
+                  ".venv\\Scripts\\python.exe"
+                ).getAbsolutePath(); 
                 // Nếu chạy trên Linux/Ubuntu server có thể là "python3"
 
                 // 4. Khởi tạo ProcessBuilder với đường dẫn hoàn toàn tương đối / động
