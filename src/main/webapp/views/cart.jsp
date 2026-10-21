@@ -51,7 +51,7 @@
                 </p>
 
                 <a class="btn btn-primary"
-                   href="${pageContext.request.contextPath}/products">
+                   href="${pageContext.request.contextPath}/home">
                     Explore Products
                 </a>
             </section>
