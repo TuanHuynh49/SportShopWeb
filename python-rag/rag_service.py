@@ -1,8 +1,7 @@
 import os
 from typing import List, Tuple
 from dotenv import load_dotenv
-from openai import OpenAI
-
+from groq import Groq
 from models import Document, Chunk
 from chunker import RecursiveChunker
 from vectorstore import MongoVectorStore
@@ -22,9 +21,8 @@ class RAGPipeline:
         self.vector_store = MongoVectorStore(connection_uri=mongo_uri, db_name=db_name)
         
         # Cấu hình OpenAI client trỏ đến Custom Endpoint (nttcodex.com)
-        self.llm_client = OpenAI(
-            api_key=os.getenv("OPENAI_API_KEY"),
-            base_url="https://nttcodex.com/v1",
+        self.llm_client = Groq(
+            api_key=os.getenv("GROQ_API_KEY"),
             timeout=600.0,
         )
 
@@ -84,7 +82,7 @@ Trả lời:"""
 
         # Gọi mô hình qua Custom Endpoint
         response = self.llm_client.chat.completions.create(
-            model="gpt-6-luna",
+            model="openai/gpt-oss-120b",
             messages=[{"role": "user", "content": prompt}],
             temperature=0.2
         )
