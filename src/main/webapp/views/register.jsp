@@ -17,10 +17,10 @@
     </head>
     <body>
 
-        <!-- 1. Nhúng Header dùng chung -->
+        <!-- Nhúng Header dùng chung -->
         <jsp:include page="/views/common/header.jsp" />
 
-        <!-- 2. Phần nội dung chính: Bố cục 2 cột (Split-Screen Card) đồng bộ với trang Login -->
+        <!-- Phần nội dung chính: Bố cục 2 cột (Split-Screen Card) đồng bộ với trang Login -->
         <main class="auth-wrapper">
             <div class="auth-split-card auth-split-card-register">
                 
@@ -271,10 +271,10 @@
             </div>
         </main>
 
-        <!-- 3. Nhúng Footer dùng chung -->
+        <!-- Nhúng Footer dùng chung -->
         <jsp:include page="/views/common/footer.jsp" />
 
-        <!-- 4. Nhúng script bật/tắt ẩn hiện mật khẩu -->
+        <!-- Nhúng script bật/tắt ẩn hiện mật khẩu -->
         <script src="${pageContext.request.contextPath}/assets/js/password-toggle.js"></script>
 
     </body>

@@ -17,10 +17,10 @@
     </head>
     <body>
 
-        <!-- 1. Nhúng Header dùng chung -->
+        <!-- Nhúng Header dùng chung -->
         <jsp:include page="/views/common/header.jsp" />
 
-        <!-- 2. Phần nội dung chính: Bố cục 2 cột (Split-Screen Card) theo mẫu thiết kế -->
+        <!-- Phần nội dung chính: Bố cục 2 cột (Split-Screen Card) theo mẫu thiết kế -->
         <main class="auth-wrapper">
             <div class="auth-split-card">
                 
@@ -155,7 +155,7 @@
                         <!-- Ghi nhớ đăng nhập & Quên mật khẩu -->
                         <div class="form-options">
                             <label class="form-checkbox-label">
-                                <input type="checkbox" name="rememberMe" value="true">
+                                <input type="checkbox" name="rememberMe" value="true" ${rememberMe ? 'checked' : ''}>
                                 <span>Remember me</span>
                             </label>
                             <a href="#" class="form-link">Forgot password?</a>
@@ -197,10 +197,10 @@
             </div>
         </main>
 
-        <!-- 3. Nhúng Footer dùng chung -->
+        <!-- Nhúng Footer dùng chung -->
         <jsp:include page="/views/common/footer.jsp" />
 
-        <!-- 4. Nhúng script bật/tắt ẩn hiện mật khẩu -->
+        <!-- Nhúng script bật/tắt ẩn hiện mật khẩu -->
         <script src="${pageContext.request.contextPath}/assets/js/password-toggle.js"></script>
 
     </body>

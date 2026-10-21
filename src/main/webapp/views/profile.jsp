@@ -17,10 +17,10 @@
     </head>
     <body>
 
-        <!-- 1. Nhúng Header dùng chung -->
+        <!-- Nhúng Header dùng chung -->
         <jsp:include page="/views/common/header.jsp" />
 
-        <!-- 2. Phần nội dung chính của Trang Hồ sơ cá nhân -->
+        <!-- Phần nội dung chính của Trang Hồ sơ cá nhân -->
         <main class="profile-wrapper">
             
             <!-- Kiểm tra: Nếu chưa đăng nhập thì hiện thông báo yêu cầu đăng nhập -->
@@ -257,7 +257,7 @@
 
         </main>
 
-        <!-- 3. Nhúng Footer dùng chung -->
+        <!-- Nhúng Footer dùng chung -->
         <jsp:include page="/views/common/footer.jsp" />
 
     </body>

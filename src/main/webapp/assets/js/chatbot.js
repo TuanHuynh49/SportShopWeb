@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const DEFAULT_MSG = 'Xin chào! Tôi là trợ lý ảo SportShop. Bạn cần hỗ trợ gì về sản phẩm hoặc đơn hàng ạ?';
     const endpoint = form.getAttribute('data-action') || '/rag-chat';
 
-    // 1. Hàm tạo và hiển thị tin nhắn lên khung chat
+    // Hàm tạo và hiển thị tin nhắn lên khung chat
     function addMessage(sender, text) {
         const div = document.createElement('div');
         div.className = 'chat-msg ' + sender;
@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', function () {
         messages.scrollTop = messages.scrollHeight;
     }
 
-    // 2. Tải lại lịch sử trò chuyện từ sessionStorage khi vào trang
+    // Tải lại lịch sử trò chuyện từ sessionStorage khi vào trang
     function loadHistory() {
         messages.innerHTML = '';
         const history = JSON.parse(sessionStorage.getItem('chat_history') || '[]');
@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // 3. Lưu một tin nhắn mới vào sessionStorage
+    // Lưu một tin nhắn mới vào sessionStorage
     function saveMessage(sender, text) {
         const history = JSON.parse(sessionStorage.getItem('chat_history') || '[]');
         history.push({ sender: sender, text: text });
@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', function () {
         box.classList.add('show');
     }
 
-    // 4. Bật / Tắt khung chat
+    // Bật / Tắt khung chat
     toggler.addEventListener('click', function () {
         const isOpen = box.classList.toggle('show');
         sessionStorage.setItem('chat_open', isOpen);
@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // 5. Nút làm mới (xóa lịch sử chat để bắt đầu lại)
+    // Nút làm mới (xóa lịch sử chat để bắt đầu lại)
     if (clearBtn) {
         clearBtn.addEventListener('click', function () {
             if (confirm('Làm mới cuộc trò chuyện với trợ lý AI?')) {
@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // 6. Xử lý gửi câu hỏi tới AI Servlet
+    // Xử lý gửi câu hỏi tới AI Servlet
     form.addEventListener('submit', function (e) {
         e.preventDefault();
         const text = input.value.trim();

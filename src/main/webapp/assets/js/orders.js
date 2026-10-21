@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function filterOrders(selectedStatus) {
         let visibleCount = 0;
 
-        // 1. Duyệt qua từng đơn hàng để ẩn hoặc hiện
+        // Duyệt qua từng đơn hàng để ẩn hoặc hiện
         cards.forEach(function (card) {
             const orderStatus = card.dataset.status;
             const isVisible = (selectedStatus === "ALL" || orderStatus === selectedStatus);
@@ -19,12 +19,12 @@ document.addEventListener("DOMContentLoaded", function () {
             if (isVisible) visibleCount++;
         });
 
-        // 2. Cập nhật giao diện tab nào đang được kích hoạt (active)
+        // Cập nhật giao diện tab nào đang được kích hoạt (active)
         tabs.forEach(function (tab) {
             tab.classList.toggle("active", tab.dataset.filter === selectedStatus);
         });
 
-        // 3. Nếu không có đơn hàng nào khớp bộ lọc thì hiện thông báo rỗng
+        // Nếu không có đơn hàng nào khớp bộ lọc thì hiện thông báo rỗng
         if (emptyMessage) {
             emptyMessage.style.display = visibleCount === 0 ? "block" : "none";
         }

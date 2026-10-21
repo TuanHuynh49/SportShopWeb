@@ -89,7 +89,7 @@ public class ProfileServlet extends HttpServlet {
         String newPassword = request.getParameter("newPassword");
         String confirmPassword = request.getParameter("confirmPassword");
 
-        // 1. Kiểm tra không được để trống
+        // Kiểm tra không được để trống
         if (currentPassword == null || currentPassword.isEmpty()
                 || newPassword == null || newPassword.isEmpty()
                 || confirmPassword == null || confirmPassword.isEmpty()) {
@@ -98,14 +98,14 @@ public class ProfileServlet extends HttpServlet {
             return;
         }
 
-        // 2. Kiểm tra độ dài mật khẩu mới
+        // Kiểm tra độ dài mật khẩu mới
         if (newPassword.length() < 6) {
             request.setAttribute("error", "New password must be at least 6 characters long.");
             request.getRequestDispatcher("/views/profile.jsp").forward(request, response);
             return;
         }
 
-        // 3. Kiểm tra xác nhận mật khẩu mới có trùng khớp không
+        // Kiểm tra xác nhận mật khẩu mới có trùng khớp không
         if (!newPassword.equals(confirmPassword)) {
             request.setAttribute("error", "New password and confirmation password do not match.");
             request.getRequestDispatcher("/views/profile.jsp").forward(request, response);
@@ -120,21 +120,21 @@ public class ProfileServlet extends HttpServlet {
             return;
         }
 
-        // 4. Kiểm tra mật khẩu hiện tại có đúng không
+        // Kiểm tra mật khẩu hiện tại có đúng không
         if (!PasswordUtil.verifyPassword(currentPassword, userInDb.getPasswordHash())) {
             request.setAttribute("error", "Current password is incorrect.");
             request.getRequestDispatcher("/views/profile.jsp").forward(request, response);
             return;
         }
 
-        // 5. Kiểm tra mật khẩu mới không được trùng mật khẩu cũ
+        // Kiểm tra mật khẩu mới không được trùng mật khẩu cũ
         if (PasswordUtil.verifyPassword(newPassword, userInDb.getPasswordHash())) {
             request.setAttribute("error", "New password cannot be the same as your current password.");
             request.getRequestDispatcher("/views/profile.jsp").forward(request, response);
             return;
         }
 
-        // 6. Băm mật khẩu mới và lưu vào database
+        // Băm mật khẩu mới và lưu vào database
         String hashedNewPassword = PasswordUtil.hashPassword(newPassword);
         userInDb.setPasswordHash(hashedNewPassword);
         boolean updated = userDAO.update(userInDb);
@@ -145,7 +145,7 @@ public class ProfileServlet extends HttpServlet {
             return;
         }
 
-        // 7. Cập nhật lại thông tin mới vào Session
+        // Cập nhật lại thông tin mới vào Session
         session.setAttribute("user", userInDb);
         request.setAttribute("message", "Password changed successfully!");
         request.getRequestDispatcher("/views/profile.jsp").forward(request, response);
@@ -156,7 +156,7 @@ public class ProfileServlet extends HttpServlet {
             HttpSession session, User user, Customer customer) throws ServletException, IOException {
         request.setAttribute("activeTab", "info");
 
-        // 1. Lấy dữ liệu người dùng vừa chỉnh sửa từ form
+        // Lấy dữ liệu người dùng vừa chỉnh sửa từ form
         String firstName = request.getParameter("firstName");
         String lastName = request.getParameter("lastName");
         String phone = request.getParameter("phone");
@@ -166,7 +166,7 @@ public class ProfileServlet extends HttpServlet {
         if (lastName != null) lastName = lastName.trim();
         if (phone != null) phone = phone.trim();
 
-        // 2. Kiểm tra không được để trống họ và tên
+        // Kiểm tra không được để trống họ và tên
         if (firstName == null || firstName.isEmpty() || lastName == null || lastName.isEmpty()) {
             request.setAttribute("error", "First name and last name cannot be empty.");
             request.getRequestDispatcher("/views/profile.jsp").forward(request, response);
@@ -176,7 +176,7 @@ public class ProfileServlet extends HttpServlet {
         UserDAO userDAO = new UserDAO();
         CustomerDAO customerDAO = new CustomerDAO();
 
-        // 3. Nếu người dùng đổi số điện thoại mới, kiểm tra xem số mới có bị ai dùng chưa
+        // Nếu người dùng đổi số điện thoại mới, kiểm tra xem số mới có bị ai dùng chưa
         if (phone != null && !phone.isEmpty() && !phone.equals(user.getPhone())) {
             if (userDAO.existsByPhone(phone)) {
                 request.setAttribute("error", "Phone number is already used by another account.");
@@ -187,7 +187,7 @@ public class ProfileServlet extends HttpServlet {
             userDAO.update(user);
         }
 
-        // 4. Cập nhật thông tin đối tượng Customer
+        // Cập nhật thông tin đối tượng Customer
         if (customer != null) {
             customer.setFirstName(firstName);
             customer.setLastName(lastName);
@@ -197,11 +197,11 @@ public class ProfileServlet extends HttpServlet {
             customerDAO.update(customer);
         }
 
-        // 5. Cập nhật lại đối tượng mới nhất vào Session
+        // Cập nhật lại đối tượng mới nhất vào Session
         session.setAttribute("user", user);
         session.setAttribute("customer", customer);
 
-        // 6. Gửi thông báo thành công về giao diện profile.jsp
+        // Gửi thông báo thành công về giao diện profile.jsp
         request.setAttribute("message", "Profile updated successfully!");
         request.getRequestDispatcher("/views/profile.jsp").forward(request, response);
     }
