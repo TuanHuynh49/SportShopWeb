@@ -34,7 +34,7 @@ public class HomeServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
-        // ---- 1. Load Brands, Categories & Albums ----
+        // ---- Load Brands, Categories & Albums ----
         List<Category> allCategories = CategoryDB.getAllCategory();
         request.setAttribute("brandList", BrandDAO.getAllBrand());
         request.setAttribute("categoryList", allCategories); // Dùng cho dropdown bộ lọc sản phẩm
@@ -67,7 +67,7 @@ public class HomeServlet extends HttpServlet {
             e.printStackTrace();
         }
 
-        // ---- 2. Filter params ----
+        // ---- Filter params ----
         int brandId = ParseUtils.parseIntOrDefault(request.getParameter("brand"), 0);
         int catId = ParseUtils.parseIntOrDefault(request.getParameter("cat"), 0);
         String keyword=request.getParameter("keyword");

@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const checkoutForm = document.getElementById("proceedCheckoutForm");
     const quantityForms = document.querySelectorAll(".quantity-form");
 
-    // 1. Cập nhật nút "Chọn tất cả" / "Bỏ chọn tất cả"
+    // Cập nhật nút "Chọn tất cả" / "Bỏ chọn tất cả"
     function updateSelectAllButton() {
         if (!selectAllBtn || checkboxes.length === 0) return;
 
@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", function () {
         selectAllBtn.setAttribute("aria-pressed", String(allChecked));
     }
 
-    // 2. Sự kiện khi click nút "Chọn tất cả"
+    // Sự kiện khi click nút "Chọn tất cả"
     if (selectAllBtn) {
         selectAllBtn.addEventListener("click", function () {
             const allChecked = Array.from(checkboxes).every(cb => cb.checked);
@@ -34,7 +34,7 @@ document.addEventListener("DOMContentLoaded", function () {
     checkboxes.forEach(cb => cb.addEventListener("change", updateSelectAllButton));
     updateSelectAllButton();
 
-    // 3. Hàm đính kèm các mã sản phẩm đã chọn (hidden input) vào form trước khi gửi lên Server
+    // Hàm đính kèm các mã sản phẩm đã chọn (hidden input) vào form trước khi gửi lên Server
     function appendSelectedIds(form) {
         if (!form) return 0;
 
@@ -56,7 +56,7 @@ document.addEventListener("DOMContentLoaded", function () {
         return count;
     }
 
-    // 4. Bắt sự kiện submit form "Cập nhật tổng tiền" và "Đặt hàng"
+    // Bắt sự kiện submit form "Cập nhật tổng tiền" và "Đặt hàng"
     [updateTotalForm, checkoutForm].forEach(function (form) {
         if (form) {
             form.addEventListener("submit", function (e) {
@@ -69,7 +69,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // 5. Khi tăng/giảm số lượng sản phẩm, giữ nguyên danh sách sản phẩm đang được chọn
+    // Khi tăng/giảm số lượng sản phẩm, giữ nguyên danh sách sản phẩm đang được chọn
     quantityForms.forEach(function (form) {
         form.addEventListener("submit", function () {
             appendSelectedIds(form);

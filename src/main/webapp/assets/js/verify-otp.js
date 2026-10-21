@@ -5,14 +5,14 @@ document.addEventListener("DOMContentLoaded", function () {
     const otpInput = document.getElementById("otp");
     const timerElem = document.getElementById("countdownTimer");
 
-    // 1. Chỉ cho phép gõ số vào ô OTP (tự động xóa nếu gõ chữ)
+    // Chỉ cho phép gõ số vào ô OTP (tự động xóa nếu gõ chữ)
     if (otpInput) {
         otpInput.addEventListener("input", function () {
             this.value = this.value.replace(/[^0-9]/g, "");
         });
     }
 
-    // 2. Đồng hồ đếm ngược thời gian hết hạn mã OTP
+    // Đồng hồ đếm ngược thời gian hết hạn mã OTP
     if (timerElem) {
         let secondsLeft = parseInt(timerElem.getAttribute("data-remaining") || "300", 10);
 

@@ -18,10 +18,10 @@
     </head>
     <body>
 
-        <!-- 1. Header dùng chung -->
+        <!-- Header dùng chung -->
         <jsp:include page="/views/common/header.jsp" />
 
-        <!-- 2. Giao diện Split-Screen Card đồng bộ -->
+        <!-- Giao diện Split-Screen Card đồng bộ -->
         <main class="auth-wrapper">
             <div class="auth-split-card" style="max-width: 980px;">
                 
@@ -168,10 +168,10 @@
             </div>
         </main>
 
-        <!-- 3. Footer dùng chung -->
+        <!-- Footer dùng chung -->
         <jsp:include page="/views/common/footer.jsp" />
 
-        <!-- 4. Nhúng file JS xử lý OTP riêng biệt -->
+        <!-- Nhúng file JS xử lý OTP riêng biệt -->
         <script src="${pageContext.request.contextPath}/assets/js/verify-otp.js"></script>
 
     </body>

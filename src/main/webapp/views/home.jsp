@@ -14,7 +14,7 @@
 
     <jsp:include page="/views/common/header.jsp" />
 
-    <!-- 1. HERO BANNER PANEL LỚN (PHONG CÁCH BARÇA STORE) -->
+    <!-- HERO BANNER PANEL LỚN (PHONG CÁCH BARÇA STORE) -->
     <section class="album-hero-section" id="heroBannerSection">
         <c:choose>
             <c:when test="${not empty albumList}">
@@ -76,7 +76,7 @@
         </c:choose>
     </section>
 
-    <!-- 2. THANH CAM KẾT / TIỆN ÍCH DƯỚI BANNER -->
+    <!-- THANH CAM KẾT / TIỆN ÍCH DƯỚI BANNER -->
     <div class="hero-trust-bar">
         <div class="trust-item"><i class="fa-solid fa-shield-halved"></i> 100% Authentic Guaranteed</div>
         <div class="trust-item"><i class="fa-solid fa-truck-fast"></i> Free Shipping from 500k</div>
@@ -86,7 +86,7 @@
 
     <main class="home-main-container">
 
-        <!-- 1. SHOP BY BRAND -->
+        <!-- SHOP BY BRAND -->
         <section class="home-section">
             <h2 class="home-section-title">Shop by Brand</h2>
             <p class="home-section-subtitle">Official gear from the brands you trust</p>
@@ -114,7 +114,7 @@
         </section>
 
 
-        <!-- 2. SHOP BY CATEGORY -->
+        <!-- SHOP BY CATEGORY -->
         <section class="home-section" id="categories">
     <div class="section-header-flex">
         <div>
@@ -194,7 +194,7 @@
     </div>
 </section>
 
-        <!-- 4. ALL PRODUCTS + FILTER (20 sản phẩm/trang) -->
+        <!-- ALL PRODUCTS + FILTER (20 sản phẩm/trang) -->
         <section class="home-section" id="products">
             <h2 class="home-section-title">All Products</h2>
             <form class="filter-bar" method="get" action="${pageContext.request.contextPath}/HomeServlet#products">
