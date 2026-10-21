@@ -140,4 +140,96 @@ public class AlbumDAO {
             em.close();
         }
     }
+
+    /**
+     * Thêm mới Album kèm danh sách các biến thể trong set
+     */
+    public static boolean insertWithVariants(Album album, List<Integer> variantIds) {
+        EntityManager em = DBUtil.getEmFactory().createEntityManager();
+        EntityTransaction tx = em.getTransaction();
+        try {
+            tx.begin();
+            List<ProductVariant> variants = new ArrayList<>();
+            if (variantIds != null && !variantIds.isEmpty()) {
+                for (Integer vid : variantIds) {
+                    if (vid != null && vid > 0) {
+                        ProductVariant v = em.find(ProductVariant.class, vid);
+                        if (v != null) {
+                            variants.add(v);
+                        }
+                    }
+                }
+            }
+            album.setItems(variants);
+            em.persist(album);
+            tx.commit();
+
+            try {
+                em.getEntityManagerFactory().getCache().evict(Album.class);
+            } catch (Exception ignored) {
+            }
+
+            return true;
+        } catch (Exception e) {
+            if (tx.isActive()) {
+                tx.rollback();
+            }
+            e.printStackTrace();
+            return false;
+        } finally {
+            em.close();
+        }
+    }
+
+    /**
+     * Cập nhật Album kèm danh sách các biến thể trong set
+     */
+    public static boolean updateWithVariants(int albumId, String name, String description, String imageUrl, List<Integer> variantIds) {
+        EntityManager em = DBUtil.getEmFactory().createEntityManager();
+        EntityTransaction tx = em.getTransaction();
+        try {
+            tx.begin();
+            Album existing = em.find(Album.class, albumId);
+            if (existing == null) {
+                tx.rollback();
+                return false;
+            }
+
+            existing.setName(name);
+            existing.setDescription(description);
+            if (imageUrl != null && !imageUrl.isBlank()) {
+                existing.setImageUrl(imageUrl);
+            }
+
+            List<ProductVariant> variants = new ArrayList<>();
+            if (variantIds != null && !variantIds.isEmpty()) {
+                for (Integer vid : variantIds) {
+                    if (vid != null && vid > 0) {
+                        ProductVariant v = em.find(ProductVariant.class, vid);
+                        if (v != null) {
+                            variants.add(v);
+                        }
+                    }
+                }
+            }
+            existing.setItems(variants);
+
+            tx.commit();
+
+            try {
+                em.getEntityManagerFactory().getCache().evict(Album.class);
+            } catch (Exception ignored) {
+            }
+
+            return true;
+        } catch (Exception e) {
+            if (tx.isActive()) {
+                tx.rollback();
+            }
+            e.printStackTrace();
+            return false;
+        } finally {
+            em.close();
+        }
+    }
 }
