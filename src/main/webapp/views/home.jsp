@@ -101,7 +101,9 @@
                         <a href="${pageContext.request.contextPath}/HomeServlet?brand=${item.brandId}#products">
                             <c:choose>
                                 <c:when test="${not empty item.logoUrl}">
-                                    <img src="${item.logoUrl}" alt="${item.name}" loading="lazy">
+                                    <img src="${item.logoUrl}" alt="${item.name}" loading="lazy" referrerpolicy="no-referrer"
+                                         onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='inline-block';">
+                                    <span class="brand-text" style="display:none;">${item.name}</span>
                                 </c:when>
                                 <c:otherwise>
                                     <span class="brand-text">${item.name}</span>
