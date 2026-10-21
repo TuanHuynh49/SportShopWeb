@@ -1,4 +1,3 @@
-
 package com.mycompany.sportshopweb.dao;
 
 import com.mycompany.sportshopweb.model.Order;
@@ -52,14 +51,14 @@ public class AdminDashboardDAO {
                     "AND p.paymentTime >= :start " +
                     "AND p.paymentTime < :end";
 
-            TypedQuery<Long> query = em.createQuery(jpql, Long.class);
+            TypedQuery<Number> query = em.createQuery(jpql, Number.class);
 
             query.setParameter("status", OrderStatus.COMPLETED);
             query.setParameter("start", start);
             query.setParameter("end", end);
 
-            Long result = query.getSingleResult();
-            return result == null ? 0L : result;
+            Number result = query.getSingleResult();
+            return result == null ? 0L : result.longValue();
 
         } finally {
             em.close();
@@ -82,12 +81,13 @@ public class AdminDashboardDAO {
                     "WHERE o.orderDate >= :start " +
                     "AND o.orderDate < :end";
 
-            TypedQuery<Long> query = em.createQuery(jpql, Long.class);
+            TypedQuery<Number> query = em.createQuery(jpql, Number.class);
 
             query.setParameter("start", start);
             query.setParameter("end", end);
 
-            return query.getSingleResult();
+            Number result = query.getSingleResult();
+            return result == null ? 0L : result.longValue();
 
         } finally {
             em.close();
@@ -109,12 +109,13 @@ public class AdminDashboardDAO {
                     "AND u.createdAt >= :start " +
                     "AND u.createdAt < :end";
 
-            TypedQuery<Long> query = em.createQuery(jpql, Long.class);
+            TypedQuery<Number> query = em.createQuery(jpql, Number.class);
 
             query.setParameter("start", start);
             query.setParameter("end", end);
 
-            return query.getSingleResult();
+            Number result = query.getSingleResult();
+            return result == null ? 0L : result.longValue();
 
         } finally {
             em.close();
@@ -128,8 +129,7 @@ public class AdminDashboardDAO {
             String jpql = "SELECT DISTINCT o FROM Order o " +
                     "LEFT JOIN FETCH o.customer c " +
                     "LEFT JOIN FETCH o.orderItems oi " +
-                    "WHERE o.orderDate IS NOT NULL " +
-                    "ORDER BY o.orderDate DESC, o.orderId DESC";
+                    "ORDER BY o.orderId DESC";
 
             return em.createQuery(jpql, Order.class)
                     .setMaxResults(5)

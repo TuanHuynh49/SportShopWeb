@@ -1,7 +1,7 @@
-
 package com.mycompany.sportshopweb.controller;
 
 import com.mycompany.sportshopweb.model.Order;
+import com.mycompany.sportshopweb.model.OrderStatus;
 import com.mycompany.sportshopweb.util.DBUtil;
 
 import jakarta.persistence.EntityManager;
@@ -90,8 +90,22 @@ public class AdminOrderServlet extends HttpServlet {
                         .toList();
             }
 
+            // Tính số đơn chờ xử lý (PENDING hoặc CONFIRMED)
+            long pendingOrders = orders.stream()
+                    .filter(o -> o.getOrderStatus() == OrderStatus.PENDING
+                            || o.getOrderStatus() == OrderStatus.CONFIRMED)
+                    .count();
+
+            // Tính tổng doanh thu từ các đơn hàng thành công (COMPLETED)
+            long totalRevenue = orders.stream()
+                    .filter(o -> o.getOrderStatus() == OrderStatus.COMPLETED)
+                    .mapToLong(Order::getTotalAmount)
+                    .sum();
+
             request.setAttribute("orders", orders);
             request.setAttribute("totalOrders", orders.size());
+            request.setAttribute("pendingOrders", pendingOrders);
+            request.setAttribute("totalRevenue", totalRevenue);
             request.setAttribute("keyword", keyword);
 
         } finally {
