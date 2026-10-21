@@ -155,19 +155,6 @@ public class CartServlet extends HttpServlet {
             int customerId = customer.getCustomerId();
 
             String action = request.getParameter("action");
-            String[] submittedIds =
-        request.getParameterValues(SELECTED_IDS);
-
-if (submittedIds != null) {
-    Set<Integer> selectedIds = new HashSet<>();
-
-    for (String id : submittedIds) {
-        selectedIds.add(Integer.parseInt(id));
-    }
-
-    session.setAttribute(SELECTED_IDS, selectedIds);
-}
-
             // ------------------------------------
             // 1. CẬP NHẬT TỔNG TIỀN THEO CHECKBOX
             // ------------------------------------
