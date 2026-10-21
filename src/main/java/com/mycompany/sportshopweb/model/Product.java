@@ -31,7 +31,7 @@ public class Product implements Serializable {
 
     private String description;
 
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductImage> images;
 
     @ManyToOne(fetch = FetchType.LAZY)
