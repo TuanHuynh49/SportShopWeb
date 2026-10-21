@@ -50,6 +50,12 @@ public class LoginServlet extends HttpServlet {
                 }
             }
         }
+        // Lấy thông báo thành công từ session (nếu có, ví dụ sau khi đổi mật khẩu)
+        HttpSession session = request.getSession(false);
+        if (session != null && session.getAttribute("message") != null) {
+            request.setAttribute("message", session.getAttribute("message"));
+            session.removeAttribute("message");
+        }
         
         request.getRequestDispatcher("/views/login.jsp").forward(request, response);
     }

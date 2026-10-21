@@ -7,7 +7,7 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/CascadeStyleSheet.css
     Author     : Anh Tuan
 */
 
-/* 1. Trang Đăng nhập & Đăng ký (Bố cục 2 cột Split-Screen) */
+/* Trang Đăng nhập & Đăng ký (Bố cục 2 cột Split-Screen) */
 .auth-wrapper {
     min-height: calc(100vh - 200px);
     display: flex;
@@ -45,12 +45,85 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/CascadeStyleSheet.css
     margin-bottom: 20px;
 }
 
-.auth-split-card-register .auth-form-pane .auth-divider {
-    margin: 20px 0 16px;
-}
-
 .auth-split-card-register .auth-form-pane .auth-footer {
     margin-top: 20px;
+}
+
+/* Khung cân đối cho trang Quên & Đặt lại mật khẩu */
+.auth-split-card-forgot {
+    max-width: 940px;
+    min-height: 520px;
+}
+
+.auth-split-card-forgot .auth-banner-pane {
+    flex: 1;
+    padding: 40px 36px;
+}
+
+.auth-split-card-forgot .banner-middle {
+    margin: 18px 0;
+}
+
+.auth-split-card-forgot .banner-title {
+    font-size: 1.85rem;
+}
+
+.auth-split-card-forgot .banner-desc {
+    font-size: 0.9rem;
+    margin-bottom: 22px;
+}
+
+.auth-split-card-forgot .banner-features {
+    gap: 16px;
+}
+
+.auth-split-card-forgot .auth-form-pane {
+    flex: 1.15;
+    padding: 40px 48px;
+}
+
+.auth-split-card-forgot .form-top-bar {
+    display: flex;
+    justify-content: flex-start;
+    margin-bottom: 16px;
+}
+
+.auth-split-card-forgot .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #64748b;
+    font-size: 0.88rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.2s, transform 0.2s;
+}
+
+.auth-split-card-forgot .back-link:hover {
+    color: #2563eb;
+    transform: translateX(-3px);
+}
+
+.auth-split-card-forgot .auth-header {
+    margin-bottom: 24px;
+}
+
+.auth-split-card-forgot .auth-header h2 {
+    font-size: 1.85rem;
+    margin-bottom: 6px;
+}
+
+.auth-split-card-forgot .auth-header p {
+    font-size: 0.92rem;
+    color: #64748b;
+}
+
+.auth-split-card-forgot .form-group {
+    margin-bottom: 20px;
+}
+
+.auth-split-card-forgot .auth-footer {
+    margin-top: 24px;
 }
 
 /* CỘT TRÁI: BANNER HÌNH ẢNH & THÔNG ĐIỆP */
@@ -437,68 +510,6 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/CascadeStyleSheet.css
 
 .auth-form-pane .auth-btn:active {
     transform: scale(0.99);
-}
-
-/* Đường kẻ phân cách "or continue with" */
-.auth-form-pane .auth-divider {
-    display: flex;
-    align-items: center;
-    margin: 26px 0 20px;
-    color: #9ca3af;
-    font-size: 0.85rem;
-}
-
-.auth-form-pane .auth-divider::before,
-.auth-form-pane .auth-divider::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background-color: #e5e7eb;
-}
-
-.auth-form-pane .auth-divider span {
-    padding: 0 14px;
-}
-
-/* 2 Nút Đăng nhập Google / Apple */
-.auth-form-pane .social-buttons {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.auth-form-pane .btn-social {
-    width: 100%;
-    padding: 12px 18px;
-    background-color: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-radius: 10px;
-    color: #1f2937; /* Chữ MÀU ĐEN rõ ràng */
-    font-size: 0.92rem;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    cursor: pointer;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-    transition: background-color 0.2s, border-color 0.2s, box-shadow 0.2s;
-}
-
-.auth-form-pane .btn-social:hover {
-    background-color: #f9fafb;
-    border-color: #d1d5db;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
-}
-
-.auth-form-pane .btn-social .google-icon {
-    font-size: 1.1rem;
-    color: #ea4335;
-}
-
-.auth-form-pane .btn-social .apple-icon {
-    font-size: 1.2rem;
-    color: #111827; /* Apple icon màu đen */
 }
 
 /* Dòng cuối cùng: Chưa có tài khoản? */
