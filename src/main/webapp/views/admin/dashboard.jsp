@@ -31,6 +31,9 @@
                             <a href="${pageContext.request.contextPath}/admin/products">
                                 <span class="admin-nav-icon">▣</span>Products
                             </a>
+                            <a href="${pageContext.request.contextPath}/admin/albums">
+                                <span class="admin-nav-icon">☷</span>Albums
+                            </a>
                             <a href="${pageContext.request.contextPath}/admin/orders">
                                 <span class="admin-nav-icon">⇄</span>Orders
                             </a>

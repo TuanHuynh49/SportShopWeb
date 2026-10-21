@@ -22,10 +22,15 @@
                             <p class="subtitle">Quản lý sản phẩm, giá bán và tồn kho.</p>
                         </div>
 
-                        <a class="button button-primary"
-                            href="${pageContext.request.contextPath}/ProductActionServlet?action=create">
-                            + Thêm sản phẩm
-                        </a>
+                        <div style="display: flex; gap: 8px;">
+                            <a class="button" href="${pageContext.request.contextPath}/admin/albums">
+                                Quản lý Albums
+                            </a>
+                            <a class="button button-primary"
+                                href="${pageContext.request.contextPath}/ProductActionServlet?action=create">
+                                + Thêm sản phẩm
+                            </a>
+                        </div>
                     </header>
 
                     <!-- Thông báo sản phẩm -->
