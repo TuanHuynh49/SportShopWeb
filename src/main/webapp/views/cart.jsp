@@ -169,14 +169,6 @@
                                                        name="variantId"
                                                        value="${item.productVariant.variantId}">
 
-                                                <%-- Preserve selected IDs when updating quantity --%>
-                                                <c:forEach var="selectedId"
-                                                           items="${selectedVariantIds}">
-                                                    <input type="hidden"
-                                                           name="selectedVariantIds"
-                                                           value="${selectedId}">
-                                                </c:forEach>
-
                                                 <label class="visually-hidden"
                                                        for="quantity-${item.productVariant.variantId}">
                                                     Product quantity
