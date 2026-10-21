@@ -241,13 +241,57 @@
                                     <div class="admin-form-group full">
                                         <label for="images">Product images</label>
 
+                                        <c:if test="${editMode and not empty product.images}">
+                                            <div style="margin-bottom: 15px;">
+                                                <span style="font-size: 13px; font-weight: 600; color: #475569; display: block; margin-bottom: 8px;">
+                                                    Ảnh hiện tại (tích chọn "Xóa ảnh" và bấm "Save Changes" để gỡ bỏ):
+                                                </span>
+                                                <div style="display: flex; flex-wrap: wrap; gap: 14px;">
+                                                    <c:forEach var="img" items="${product.images}">
+                                                        <div class="img-preview-card" style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px; text-align: center; width: 120px; background: #f8fafc; box-shadow: 0 1px 3px rgba(0,0,0,0.05); transition: all 0.2s;">
+                                                            <img src="${img.imageUrl}" alt="Product Image" style="width: 104px; height: 104px; object-fit: cover; border-radius: 6px; display: block; margin: 0 auto 6px; transition: all 0.2s;">
+                                                            <c:if test="${img.primary}">
+                                                                <span style="display: inline-block; font-size: 11px; background: #22c55e; color: #fff; padding: 2px 6px; border-radius: 4px; margin-bottom: 4px;">Ảnh chính</span>
+                                                            </c:if>
+                                                            <div>
+                                                                <label style="font-size: 12px; color: #ef4444; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; margin-top: 4px;">
+                                                                    <input type="checkbox" name="deleteImageIds" value="${img.productImageId}" onchange="toggleDeleteImage(this)">
+                                                                    Xóa ảnh
+                                                                </label>
+                                                                <span class="delete-status" style="display: none; font-size: 10px; color: #dc2626; margin-top: 2px;">(Sẽ xóa khi lưu)</span>
+                                                            </div>
+                                                        </div>
+                                                    </c:forEach>
+                                                </div>
+                                            </div>
+                                            <script>
+                                                function toggleDeleteImage(cb) {
+                                                    var card = cb.closest('.img-preview-card');
+                                                    var img = card.querySelector('img');
+                                                    var statusText = card.querySelector('.delete-status');
+                                                    if (cb.checked) {
+                                                        card.style.borderColor = '#ef4444';
+                                                        card.style.backgroundColor = '#fef2f2';
+                                                        img.style.opacity = '0.35';
+                                                        img.style.filter = 'grayscale(100%)';
+                                                        if (statusText) statusText.style.display = 'block';
+                                                    } else {
+                                                        card.style.borderColor = '#e2e8f0';
+                                                        card.style.backgroundColor = '#f8fafc';
+                                                        img.style.opacity = '1';
+                                                        img.style.filter = 'none';
+                                                        if (statusText) statusText.style.display = 'none';
+                                                    }
+                                                }
+                                            </script>
+                                        </c:if>
+
                                         <input id="images" name="images" type="file" accept="image/*" multiple>
 
                                         <span class="help-text">
                                             <c:choose>
                                                 <c:when test="${editMode}">
-                                                    Image uploads are not processed by the current
-                                                    update action. Existing images will be retained.
+                                                    Select one or more new image files to add to this product. Check "Delete" above if you wish to remove existing images.
                                                 </c:when>
                                                 <c:otherwise>
                                                     Select one or more image files.
