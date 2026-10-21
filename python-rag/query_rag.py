@@ -6,9 +6,7 @@ from dotenv import load_dotenv
 # Ép luồng chuẩn stdout dùng UTF-8
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
-# Lấy đường dẫn thư mục hiện tại chứa chính file query_rag.py
 
-# Nạp file .env từ đường dẫn tương đối
 load_dotenv()
 
 from rag_service import RAGPipeline
