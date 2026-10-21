@@ -241,23 +241,6 @@
                             <i class="fa-solid fa-arrow-right"></i>
                         </button>
 
-                        <!-- Dòng phân cách "or" -->
-                        <div class="auth-divider">
-                            <span>or sign up with</span>
-                        </div>
-
-                        <!-- Đăng ký nhanh bằng Google / Apple -->
-                        <div class="social-buttons">
-                            <button type="button" class="btn-social">
-                                <i class="fa-brands fa-google google-icon"></i>
-                                <span>Sign up with Google</span>
-                            </button>
-                            <button type="button" class="btn-social">
-                                <i class="fa-brands fa-apple apple-icon"></i>
-                                <span>Sign up with Apple</span>
-                            </button>
-                        </div>
-
                         <!-- Chuyển hướng sang trang đăng nhập -->
                         <div class="auth-footer">
                             Already have an account? 

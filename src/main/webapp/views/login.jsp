@@ -158,7 +158,7 @@
                                 <input type="checkbox" name="rememberMe" value="true" ${rememberMe ? 'checked' : ''}>
                                 <span>Remember me</span>
                             </label>
-                            <a href="#" class="form-link">Forgot password?</a>
+                            <a href="${pageContext.request.contextPath}/ForgotPasswordServlet" class="form-link">Forgot password?</a>
                         </div>
 
                         <!-- Nút xác nhận đăng nhập -->
@@ -166,23 +166,6 @@
                             <span>Sign In</span>
                             <i class="fa-solid fa-arrow-right"></i>
                         </button>
-
-                        <!-- Dòng phân cách "or" -->
-                        <div class="auth-divider">
-                            <span>or continue with</span>
-                        </div>
-
-                        <!-- Đăng nhập bằng Google / Apple (Giao diện hiển thị) -->
-                        <div class="social-buttons">
-                            <button type="button" class="btn-social">
-                                <i class="fa-brands fa-google google-icon"></i>
-                                <span>Sign in with Google</span>
-                            </button>
-                            <button type="button" class="btn-social">
-                                <i class="fa-brands fa-apple apple-icon"></i>
-                                <span>Sign in with Apple</span>
-                            </button>
-                        </div>
 
                         <!-- Chuyển hướng sang trang đăng ký -->
                         <div class="auth-footer">
