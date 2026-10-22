@@ -66,7 +66,8 @@ public class LoginServlet extends HttpServlet {
             throws ServletException, IOException {
         // Thiết lập mã hóa tiếng Việt
         request.setCharacterEncoding("UTF-8");
-
+        
+        // Business rule layer
         // Lấy dữ liệu từ form login.jsp
         String identifier = request.getParameter("identifier");
         String password = request.getParameter("password");
@@ -85,6 +86,7 @@ public class LoginServlet extends HttpServlet {
             return;
         }
 
+        // Data access layer
         // Tìm tài khoản trong database theo email hoặc số điện thoại
         UserDAO userDAO = new UserDAO();
         User user = userDAO.findByIdentifier(identifier);
@@ -103,7 +105,7 @@ public class LoginServlet extends HttpServlet {
             return;
         }
 
-        // Kiểm tra tính trùng khớp của mật khẩu
+        // Kiểm tra tính trùng khớp của mật khẩu (lớp tiện ích)
         boolean isPasswordCorrect = PasswordUtil.verifyPassword(password, user.getPasswordHash());
         if (!isPasswordCorrect) {
             request.setAttribute("error", "Invalid email/phone or password.");
@@ -115,7 +117,7 @@ public class LoginServlet extends HttpServlet {
         String rememberMe = request.getParameter("rememberMe");
         Cookie cookie = new Cookie("remember_identifier", identifier);
         cookie.setPath(request.getContextPath().isEmpty() ? "/": request.getContextPath());
-        cookie.setHttpOnly(true);
+        cookie.setHttpOnly(true); //chồn XSS (Cross-Site Scripting) đọc trộm
         
         if ("true".equals(rememberMe)){
             cookie.setMaxAge(7*24*60*60);
@@ -137,6 +139,7 @@ public class LoginServlet extends HttpServlet {
         if (admin != null) {
             session.setAttribute("admin", admin);
 
+            // chống lỗi F5, + getContextPath tạo đường dẫn động chống lỗi 404
             response.sendRedirect(
                     request.getContextPath() + "/admin/dashboard");
             return;

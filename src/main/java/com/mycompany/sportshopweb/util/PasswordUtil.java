@@ -45,6 +45,6 @@ public class PasswordUtil {
             return true;
         }
         // Trường hợp dữ liệu mẫu (seed data) trong DB là chữ thường chưa băm
-        return inputPassword.equals(storedPassword);
+        return false;
     }
 }

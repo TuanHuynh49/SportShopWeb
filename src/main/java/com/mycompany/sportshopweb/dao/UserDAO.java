@@ -60,10 +60,10 @@ public class UserDAO {
     // Tìm người dùng theo email hoặc số điện thoại (Đăng nhập)
     public User findByIdentifier(String identifier) {
         EntityManager em = DBUtil.getEmFactory().createEntityManager();
-        String jpql = "SELECT u FROM User u WHERE u.email = :identifier OR u.phone = :identifier";
+        String jpql = "SELECT u FROM User u WHERE u.email = :identifier OR u.phone = :identifier"; // đánh dấu chỗ truyền vào
         try {
             TypedQuery<User> query = em.createQuery(jpql, User.class);
-            query.setParameter("identifier", identifier);
+            query.setParameter("identifier", identifier); // xử lý dưới dạng PrepareStatement
             return query.getSingleResult();
         } catch (NoResultException e) {
             return null;
