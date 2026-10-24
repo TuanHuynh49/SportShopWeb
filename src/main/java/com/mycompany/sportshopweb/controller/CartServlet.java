@@ -26,18 +26,19 @@ import java.util.logging.Logger;
 @WebServlet("/cart")
 public class CartServlet extends HttpServlet {
 
-    private static final Logger LOGGER =
-            Logger.getLogger(CartServlet.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(CartServlet.class.getName());
 
-    private static final String SELECTED_IDS =
-            "selectedVariantIds";
+    private static final String SELECTED_IDS = "selectedVariantIds";
 
-    private static final String CUSTOMER = "customer";
-
-    private static final String CART_COUNT = "cartCount";
-
-    private final CartDAO cartDAO = new CartDAO();
-    private final CartItemDAO cartItemDAO = new CartItemDAO();
+    private CartDAO cartDAO;
+    private CartItemDAO cartItemDAO;
+    
+    
+    @Override
+    public void init() throws ServletException {
+        cartDAO = new CartDAO();
+        cartItemDAO = new CartItemDAO();
+    }
 
     // ==================== DO GET ====================
 
@@ -58,7 +59,7 @@ public class CartServlet extends HttpServlet {
 
         try {
             Customer customer =
-                    (Customer) session.getAttribute(CUSTOMER);
+                    (Customer) session.getAttribute("customer");
 
             int customerId = customer.getCustomerId();
 
@@ -79,7 +80,7 @@ public class CartServlet extends HttpServlet {
                     calculateTotal(cartItems, selectedIds);
 
             session.setAttribute(
-                    CART_COUNT, countItems(cart)
+                    "cartCount", countItems(cart)
             );
 
             request.setAttribute("cart", cart);
@@ -133,7 +134,7 @@ public class CartServlet extends HttpServlet {
 
         try {
             Customer customer =
-                    (Customer) session.getAttribute(CUSTOMER);
+                    (Customer) session.getAttribute("customer");
 
             int customerId = customer.getCustomerId();
             String action = request.getParameter("action");
@@ -208,7 +209,7 @@ public class CartServlet extends HttpServlet {
             Cart cart = findCart(customerId);
 
             session.setAttribute(
-                    CART_COUNT, countItems(cart)
+                    "cartCount", countItems(cart)
             );
 
             redirectToCart(request, response);
@@ -240,7 +241,7 @@ public class CartServlet extends HttpServlet {
     // Kiểm tra khách hàng đã đăng nhập.
     private boolean isLoggedIn(HttpSession session) {
         return session != null
-                && session.getAttribute(CUSTOMER) instanceof Customer;
+                && session.getAttribute("customer") instanceof Customer;
     }
 
     // Tìm giỏ hàng theo khách hàng.
