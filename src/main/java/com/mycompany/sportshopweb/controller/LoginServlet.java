@@ -24,7 +24,6 @@ import jakarta.servlet.http.Cookie;
         
 import com.mycompany.sportshopweb.dao.CartDAO;
 import com.mycompany.sportshopweb.model.Cart;
-import com.mycompany.sportshopweb.model.CartItem;
 
 
 /**
@@ -161,6 +160,16 @@ public class LoginServlet extends HttpServlet {
 
         // Nếu là Customer thông thường thì chuyển đến trang chủ HomeServlet
         Customer customer = customerDAO.findByUserId(user.getUserId());
+
+        if (customer == null) {
+            forwardError(
+                    request,
+                    response,
+                    "Không tìm thấy thông tin khách hàng."
+            );
+            return;
+        }
+
         session.setAttribute("customer", customer);
         updateCartCount(session, customer.getCustomerId());
 
