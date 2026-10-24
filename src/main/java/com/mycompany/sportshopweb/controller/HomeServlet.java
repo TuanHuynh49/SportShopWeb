@@ -14,7 +14,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
-import com.mycompany.sportshopweb.util.DBUtil;
 import com.mycompany.sportshopweb.util.ParseUtils;
 
 @WebServlet(name = "HomeServlet", urlPatterns = {"/HomeServlet", "/home"})
