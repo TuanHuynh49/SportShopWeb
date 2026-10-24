@@ -44,6 +44,9 @@ public class Adress implements Serializable {
         this.deleted = deleted;
     }
 
+    @Column(name = "deleted")
+    private boolean deleted;
+
     public Adress() {
         this.addressId = 0;
         this.customer = new Customer();
@@ -117,12 +120,20 @@ public class Adress implements Serializable {
     }
 
     public boolean getDefaultAddress() {
-    return isDefault;
-}
+        return isDefault;
+    }
 
-public void setDefault(boolean isDefault) {
-    this.isDefault = isDefault;
-}
+    public void setDefault(boolean isDefault) {
+        this.isDefault = isDefault;
+    }
+
+    public boolean isDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
+    }
 }
 
 

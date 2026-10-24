@@ -247,7 +247,7 @@ EntityTransaction trans = em.getTransaction();
             if (wasDefault) {
                 String nextJpql = "SELECT a FROM Adress a "
                         + "WHERE a.customer.customerId = :customerId "
-+ "AND a.deleted = false "
+                        + "AND a.deleted = false "
                         + "ORDER BY a.addressId ASC";
 
                 var nextQuery = em.createQuery(nextJpql, Adress.class);
