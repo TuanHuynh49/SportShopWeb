@@ -17,6 +17,7 @@
             </title>
 
             <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/admin.css">
+            <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/product-form.css">
         </head>
 
         <body class="admin-body">
@@ -196,8 +197,8 @@
                                     <!-- Initial variant: only required when creating -->
 
                                     <c:if test="${not editMode}">
-                                        <div class="admin-form-group full">
-                                            <h3>Initial Product Variant</h3>
+                                        <div class="admin-form-group full variant-section-header">
+                                            <h3><span style="color: var(--admin-lime);">◈</span> Initial Product Variant</h3>
                                             <p class="help-text">
                                                 Every new product needs an initial variant.
                                                 Stock quantity belongs to the variant, not Product.
@@ -246,23 +247,23 @@
                                         <label for="images">Product images</label>
 
                                         <c:if test="${editMode and not empty product.images}">
-                                            <div style="margin-bottom: 15px;">
-                                                <span style="font-size: 13px; font-weight: 600; color: #475569; display: block; margin-bottom: 8px;">
+                                            <div style="margin-bottom: 16px;">
+                                                <span class="existing-images-header">
                                                     Ảnh hiện tại (tích chọn "Xóa ảnh" và bấm "Save Changes" để gỡ bỏ):
                                                 </span>
-                                                <div style="display: flex; flex-wrap: wrap; gap: 14px;">
+                                                <div class="images-preview-grid">
                                                     <c:forEach var="img" items="${product.images}">
-                                                        <div class="img-preview-card" style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px; text-align: center; width: 120px; background: #f8fafc; box-shadow: 0 1px 3px rgba(0,0,0,0.05); transition: all 0.2s;">
-                                                            <img src="${img.imageUrl}" alt="Product Image" style="width: 104px; height: 104px; object-fit: cover; border-radius: 6px; display: block; margin: 0 auto 6px; transition: all 0.2s;">
+                                                        <div class="img-preview-card">
+                                                            <img src="${img.imageUrl}" alt="Product Image">
                                                             <c:if test="${img.primary}">
-                                                                <span style="display: inline-block; font-size: 11px; background: #22c55e; color: #fff; padding: 2px 6px; border-radius: 4px; margin-bottom: 4px;">Ảnh chính</span>
+                                                                <span class="img-primary-badge">Ảnh chính</span>
                                                             </c:if>
                                                             <div>
-                                                                <label style="font-size: 12px; color: #ef4444; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; margin-top: 4px;">
+                                                                <label class="img-delete-label">
                                                                     <input type="checkbox" name="deleteImageIds" value="${img.productImageId}" onchange="toggleDeleteImage(this)">
                                                                     Xóa ảnh
                                                                 </label>
-                                                                <span class="delete-status" style="display: none; font-size: 10px; color: #dc2626; margin-top: 2px;">(Sẽ xóa khi lưu)</span>
+                                                                <span class="img-delete-status">(Sẽ xóa khi lưu)</span>
                                                             </div>
                                                         </div>
                                                     </c:forEach>
@@ -272,16 +273,14 @@
                                                 function toggleDeleteImage(cb) {
                                                     var card = cb.closest('.img-preview-card');
                                                     var img = card.querySelector('img');
-                                                    var statusText = card.querySelector('.delete-status');
+                                                    var statusText = card.querySelector('.img-delete-status');
                                                     if (cb.checked) {
-                                                        card.style.borderColor = '#ef4444';
-                                                        card.style.backgroundColor = '#fef2f2';
+                                                        card.classList.add('marked-delete');
                                                         img.style.opacity = '0.35';
                                                         img.style.filter = 'grayscale(100%)';
                                                         if (statusText) statusText.style.display = 'block';
                                                     } else {
-                                                        card.style.borderColor = '#e2e8f0';
-                                                        card.style.backgroundColor = '#f8fafc';
+                                                        card.classList.remove('marked-delete');
                                                         img.style.opacity = '1';
                                                         img.style.filter = 'none';
                                                         if (statusText) statusText.style.display = 'none';

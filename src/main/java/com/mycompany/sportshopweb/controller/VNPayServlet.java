@@ -107,24 +107,24 @@ public class VNPayServlet extends HttpServlet {
             String ipAddress = request.getRemoteAddr();
 
             // 7. Log cấu hình để kiểm tra Return URL
-            String returnUrl = VNPayConfig.getReturnUrl();
+            // String returnUrl = VNPayConfig.getReturnUrl();
 
-            System.out.println(
-                    "VNPAY_TMN_CODE exists: "
-                            + (System.getenv("VNPAY_TMN_CODE") != null
-                                    && !System.getenv("VNPAY_TMN_CODE").isBlank()));
+            // System.out.println(
+            // "VNPAY_TMN_CODE exists: "
+            // + (System.getenv("VNPAY_TMN_CODE") != null
+            // && !System.getenv("VNPAY_TMN_CODE").isBlank()));
 
-            System.out.println(
-                    "VNPAY_RETURN_URL env = "
-                            + System.getenv("VNPAY_RETURN_URL"));
+            // System.out.println(
+            // "VNPAY_RETURN_URL env = "
+            // + System.getenv("VNPAY_RETURN_URL"));
 
-            System.out.println(
-                    "VNPay returnUrl config = " + returnUrl);
+            // System.out.println(
+            // "VNPay returnUrl config = " + returnUrl);
 
-            System.out.println("VNPay amountVnd = " + amountVnd);
-            System.out.println("VNPay orderId = " + orderId);
-            System.out.println("VNPay txnRef = " + txnRef);
-            System.out.println("VNPay ipAddress = " + ipAddress);
+            // System.out.println("VNPay amountVnd = " + amountVnd);
+            // System.out.println("VNPay orderId = " + orderId);
+            // System.out.println("VNPay txnRef = " + txnRef);
+            // System.out.println("VNPay ipAddress = " + ipAddress);
 
             // 8. Tạo URL thanh toán
             String paymentUrl = VNPayService.createPaymentUrl(
