@@ -1,4 +1,3 @@
-
 package com.mycompany.sportshopweb.dao;
 
 import com.mycompany.sportshopweb.model.Adress;
@@ -9,7 +8,7 @@ import java.util.List;
 
 public class AdressDAO {
 
-    // 1. Lấy tất cả địa chỉ chưa bị xóa của khách hàng
+    // Lấy các địa chỉ chưa bị xóa của khách hàng (ưu tiên địa chỉ mặc định lên đầu)
     public List<Adress> findByCustomerId(int customerId) {
         EntityManager em = DBUtil.getEmFactory().createEntityManager();
 
@@ -22,13 +21,14 @@ public class AdressDAO {
             var query = em.createQuery(jpql, Adress.class);
             query.setParameter("customerId", customerId);
 
-            return query.getResultList();
+            List<Adress> addresses = query.getResultList();
+            return addresses;
         } finally {
             em.close();
         }
     }
 
-    // 2. Lấy địa chỉ mặc định chưa bị xóa
+    // Lấy địa chỉ mặc định chưa bị xóa của khách hàng
     public Adress findDefaultByCustomerId(int customerId) {
         EntityManager em = DBUtil.getEmFactory().createEntityManager();
 
@@ -43,18 +43,16 @@ public class AdressDAO {
             query.setMaxResults(1);
 
             List<Adress> addresses = query.getResultList();
-
             if (addresses.isEmpty()) {
                 return null;
             }
-
             return addresses.get(0);
         } finally {
             em.close();
         }
     }
 
-    // 3. Tìm địa chỉ chưa bị xóa theo ID và ID khách hàng
+    // Tìm địa chỉ theo ID và ID khách hàng (chỉ lấy địa chỉ chưa bị xóa)
     public Adress findByIdAndCustomerId(int addressId, int customerId) {
         EntityManager em = DBUtil.getEmFactory().createEntityManager();
 
@@ -70,31 +68,27 @@ public class AdressDAO {
             query.setMaxResults(1);
 
             List<Adress> addresses = query.getResultList();
-
             if (addresses.isEmpty()) {
                 return null;
             }
-
             return addresses.get(0);
         } finally {
             em.close();
         }
     }
 
-    // 4. Thêm địa chỉ mới
+    // Thêm địa chỉ mới
     public boolean insert(Adress address) {
         EntityManager em = DBUtil.getEmFactory().createEntityManager();
-        EntityTransaction trans = em.getTransaction();
+EntityTransaction trans = em.getTransaction();
 
         try {
             trans.begin();
 
             int customerId = address.getCustomer().getCustomerId();
-
-            // Địa chỉ mới chưa bị xóa
             address.setDeleted(false);
 
-            // Đếm các địa chỉ còn hoạt động
+            // Đếm số địa chỉ đang hoạt động
             String countJpql = "SELECT COUNT(a) FROM Adress a "
                     + "WHERE a.customer.customerId = :customerId "
                     + "AND a.deleted = false";
@@ -104,32 +98,23 @@ public class AdressDAO {
 
             Long addressCount = countQuery.getSingleResult();
 
-            // Nếu là địa chỉ hoạt động đầu tiên thì đặt mặc định
+            // Nếu là địa chỉ hoạt động đầu tiên, tự động đặt làm mặc định
             if (addressCount == 0) {
                 address.setDefault(true);
             }
 
-            // Nếu đặt địa chỉ mới làm mặc định
+            // Nếu đặt địa chỉ mới làm mặc định, hủy mặc định của các địa chỉ khác
             if (address.getDefaultAddress()) {
-                String updateJpql = "UPDATE Adress a "
-                        + "SET a.isDefault = false "
-                        + "WHERE a.customer.customerId = :customerId "
-                        + "AND a.deleted = false";
-
-                var updateQuery = em.createQuery(updateJpql);
-                updateQuery.setParameter("customerId", customerId);
-                updateQuery.executeUpdate();
+                resetDefaultAddress(em, customerId);
             }
 
             em.persist(address);
             trans.commit();
-
             return true;
         } catch (Exception e) {
             if (trans.isActive()) {
                 trans.rollback();
             }
-
             e.printStackTrace();
             return false;
         } finally {
@@ -137,7 +122,7 @@ public class AdressDAO {
         }
     }
 
-    // 5. Cập nhật địa chỉ chưa bị xóa
+    // Cập nhật thông tin địa chỉ chưa bị xóa
     public boolean update(Adress address, int customerId) {
         EntityManager em = DBUtil.getEmFactory().createEntityManager();
         EntityTransaction trans = em.getTransaction();
@@ -156,28 +141,18 @@ public class AdressDAO {
             query.setMaxResults(1);
 
             List<Adress> addresses = query.getResultList();
-
             if (addresses.isEmpty()) {
                 trans.rollback();
                 return false;
             }
 
             Adress existing = addresses.get(0);
-
             existing.setProvince(address.getProvince());
             existing.setWard(address.getWard());
             existing.setDetailAddress(address.getDetailAddress());
 
             if (address.getDefaultAddress()) {
-                String updateJpql = "UPDATE Adress a "
-                        + "SET a.isDefault = false "
-                        + "WHERE a.customer.customerId = :customerId "
-                        + "AND a.deleted = false";
-
-                var updateQuery = em.createQuery(updateJpql);
-                updateQuery.setParameter("customerId", customerId);
-                updateQuery.executeUpdate();
-
+                resetDefaultAddress(em, customerId);
                 existing.setDefault(true);
             }
 
@@ -187,15 +162,13 @@ public class AdressDAO {
             if (trans.isActive()) {
                 trans.rollback();
             }
-
             e.printStackTrace();
             return false;
         } finally {
             em.close();
         }
     }
-
-    // 6. Đặt địa chỉ chưa bị xóa làm mặc định
+// Đặt một địa chỉ làm mặc định
     public boolean setDefault(int addressId, int customerId) {
         EntityManager em = DBUtil.getEmFactory().createEntityManager();
         EntityTransaction trans = em.getTransaction();
@@ -214,23 +187,13 @@ public class AdressDAO {
             query.setMaxResults(1);
 
             List<Adress> addresses = query.getResultList();
-
             if (addresses.isEmpty()) {
                 trans.rollback();
                 return false;
             }
 
             Adress address = addresses.get(0);
-
-            String updateJpql = "UPDATE Adress a "
-                    + "SET a.isDefault = false "
-                    + "WHERE a.customer.customerId = :customerId "
-                    + "AND a.deleted = false";
-
-            var updateQuery = em.createQuery(updateJpql);
-            updateQuery.setParameter("customerId", customerId);
-            updateQuery.executeUpdate();
-
+            resetDefaultAddress(em, customerId);
             address.setDefault(true);
 
             trans.commit();
@@ -239,7 +202,6 @@ public class AdressDAO {
             if (trans.isActive()) {
                 trans.rollback();
             }
-
             e.printStackTrace();
             return false;
         } finally {
@@ -247,7 +209,7 @@ public class AdressDAO {
         }
     }
 
-    // 7. Xóa mềm địa chỉ
+    // Xóa mềm địa chỉ (đánh dấu deleted = true, không xóa vật lý khỏi cơ sở dữ liệu)
     public boolean softDelete(int addressId, int customerId) {
         EntityManager em = DBUtil.getEmFactory().createEntityManager();
         EntityTransaction trans = em.getTransaction();
@@ -266,7 +228,6 @@ public class AdressDAO {
             query.setMaxResults(1);
 
             List<Adress> addresses = query.getResultList();
-
             if (addresses.isEmpty()) {
                 trans.rollback();
                 return false;
@@ -275,15 +236,18 @@ public class AdressDAO {
             Adress address = addresses.get(0);
             boolean wasDefault = address.getDefaultAddress();
 
-            // Đánh dấu đã xóa, không gọi em.remove()
+            // Đánh dấu đã xóa mềm và gỡ cờ mặc định
             address.setDeleted(true);
             address.setDefault(false);
 
-            // Nếu xóa địa chỉ mặc định, chọn địa chỉ khác còn hoạt động
+            // Đồng bộ trạng thái vào EntityManager trước khi truy vấn địa chỉ tiếp theo
+            em.flush();
+
+            // Nếu xóa địa chỉ mặc định, tự động chọn 1 địa chỉ còn hoạt động khác làm mặc định thay thế
             if (wasDefault) {
                 String nextJpql = "SELECT a FROM Adress a "
                         + "WHERE a.customer.customerId = :customerId "
-                        + "AND a.deleted = false "
++ "AND a.deleted = false "
                         + "ORDER BY a.addressId ASC";
 
                 var nextQuery = em.createQuery(nextJpql, Adress.class);
@@ -291,7 +255,6 @@ public class AdressDAO {
                 nextQuery.setMaxResults(1);
 
                 List<Adress> remainingAddresses = nextQuery.getResultList();
-
                 if (!remainingAddresses.isEmpty()) {
                     remainingAddresses.get(0).setDefault(true);
                 }
@@ -303,11 +266,22 @@ public class AdressDAO {
             if (trans.isActive()) {
                 trans.rollback();
             }
-
             e.printStackTrace();
             return false;
         } finally {
             em.close();
         }
+    }
+
+    // Đặt tất cả địa chỉ của khách hàng về không mặc định (Áp dụng DRY)
+    private void resetDefaultAddress(EntityManager em, int customerId) {
+        String updateJpql = "UPDATE Adress a "
+                + "SET a.isDefault = false "
+                + "WHERE a.customer.customerId = :customerId "
+                + "AND a.deleted = false";
+
+        var updateQuery = em.createQuery(updateJpql);
+        updateQuery.setParameter("customerId", customerId);
+        updateQuery.executeUpdate();
     }
 }

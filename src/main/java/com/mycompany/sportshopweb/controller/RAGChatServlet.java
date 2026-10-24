@@ -16,8 +16,8 @@ import jakarta.servlet.http.HttpServletResponse;
 @WebServlet(name = "RAGChatServlet", urlPatterns = {"/rag-chat"})
 public class RAGChatServlet extends HttpServlet {
 
-    private static final String PYTHON_RAG_URL = System.getenv().get(
-        "PYTHON_RAG_URL"
+    private static final String PYTHON_RAG_URL = System.getenv().getOrDefault(
+        "PYTHON_RAG_URL","https://sportshop-python-rag.onrender.com/chat"
     );
 
     @Override
@@ -37,11 +37,9 @@ public class RAGChatServlet extends HttpServlet {
 
         if (userQuery != null && !userQuery.trim().isEmpty()) {
             try {
-                // Xử lý escape các ký tự đặc biệt để tạo JSON payload an toàn
                 String escapedQuery = userQuery.replace("\\", "\\\\").replace("\"", "\\\"");
                 String jsonPayload = "{\"query\": \"" + escapedQuery + "\", \"top_k\": 3}";
 
-                // Sử dụng HttpClient để gọi sang FastAPI Python Service
                 HttpClient client = HttpClient.newHttpClient();
                 HttpRequest httpRequest = HttpRequest.newBuilder()
                         .uri(URI.create(PYTHON_RAG_URL))

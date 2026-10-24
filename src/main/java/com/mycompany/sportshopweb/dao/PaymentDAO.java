@@ -131,4 +131,28 @@ public class PaymentDAO {
             em.close();
         }
     }
+    
+    public List<Payment> findByOrderId(
+            EntityManager em, int orderId) {
+
+        return em.createQuery(
+                "SELECT p FROM Payment p "
+                + "WHERE p.orderId = :orderId "
+                + "ORDER BY p.paymentTime DESC",
+                Payment.class)
+                .setParameter("orderId", orderId)
+                .getResultList();
+    }
+
+    public void insertPayment(
+            EntityManager em, Payment payment) {
+
+        if (em == null || payment == null) {
+            throw new IllegalArgumentException(
+                    "EntityManager và Payment không được null.");
+        }
+
+        em.persist(payment);
+    }
+
 }

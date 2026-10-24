@@ -10,6 +10,7 @@ import jakarta.persistence.EntityTransaction;
 
 public class OrderItemDAO {
 
+    // Hàm cũ: tự tạo EntityManager và transaction
     public void insertOrderItem(int orderId, int variantId, int quantity) {
         EntityManager em = DBUtil.getEmFactory().createEntityManager();
         EntityTransaction trans = em.getTransaction();
@@ -17,29 +18,11 @@ public class OrderItemDAO {
         try {
             trans.begin();
 
-            Order order = em.find(Order.class, orderId);
-            ProductVariant variant = em.find(ProductVariant.class, variantId);
-
-            if (order == null) {
-                throw new IllegalArgumentException("Không tìm thấy đơn hàng!");
-            }
-
-            if (variant == null) {
-                throw new IllegalArgumentException("Không tìm thấy biến thể sản phẩm!");
-            }
-
-            if (quantity <= 0) {
-                throw new IllegalArgumentException("Số lượng phải lớn hơn 0!");
-            }
-
-            OrderItem orderItem = new OrderItem(variant, quantity);
-            orderItem.setOrder(order);
-
-            em.persist(orderItem);
+            insertOrderItem(em, orderId, variantId, quantity);
 
             trans.commit();
 
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             if (trans.isActive()) {
                 trans.rollback();
             }
@@ -47,5 +30,53 @@ public class OrderItemDAO {
         } finally {
             em.close();
         }
+    }
+
+    // Hàm mới: sử dụng EntityManager và transaction do bên gọi quản lý
+    public void insertOrderItem(
+            EntityManager em,
+            int orderId,
+            int variantId,
+            int quantity) {
+
+        if (em == null) {
+            throw new IllegalArgumentException(
+                    "EntityManager không được null!");
+        }
+
+        if (orderId <= 0) {
+            throw new IllegalArgumentException(
+                    "Mã đơn hàng không hợp lệ!");
+        }
+
+        if (variantId <= 0) {
+            throw new IllegalArgumentException(
+                    "Mã biến thể sản phẩm không hợp lệ!");
+        }
+
+        if (quantity <= 0) {
+            throw new IllegalArgumentException(
+                    "Số lượng phải lớn hơn 0!");
+        }
+
+        Order order = em.find(Order.class, orderId);
+
+        if (order == null) {
+            throw new IllegalArgumentException(
+                    "Không tìm thấy đơn hàng!");
+        }
+
+        ProductVariant variant = em.find(
+                ProductVariant.class, variantId);
+
+        if (variant == null) {
+            throw new IllegalArgumentException(
+                    "Không tìm thấy biến thể sản phẩm!");
+        }
+
+        OrderItem orderItem = new OrderItem(variant, quantity);
+        orderItem.setOrder(order);
+
+        em.persist(orderItem);
     }
 }

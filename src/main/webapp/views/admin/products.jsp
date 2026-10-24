@@ -27,7 +27,7 @@
                                 Quản lý Albums
                             </a>
                             <a class="button button-primary"
-                                href="${pageContext.request.contextPath}/ProductActionServlet?action=create">
+                                href="${pageContext.request.contextPath}/admin/product-actions?action=create">
                                 + Thêm sản phẩm
                             </a>
                         </div>
@@ -222,7 +222,7 @@
                                                     <td>
                                                         <div class="actions">
                                                             <a class="button button-small"
-                                                                href="${pageContext.request.contextPath}/ProductActionServlet?action=edit&amp;productId=${product.productId}">
+                                                                href="${pageContext.request.contextPath}/admin/product-actions?action=edit&amp;productId=${product.productId}">
                                                                 Sửa
                                                             </a>
 

@@ -231,7 +231,7 @@
                                                     <div class="admin-product-actions">
                                                         <!-- Update product -->
                                                         <a class="admin-button"
-                                                            href="${pageContext.request.contextPath}/ProductActionServlet?action=edit&amp;id=${product.productId}">
+                                                            href="${pageContext.request.contextPath}/admin/product-actions?action=edit&amp;productId=${product.productId}">
                                                             Update
                                                         </a>
 
