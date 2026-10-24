@@ -14,12 +14,17 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
-import java.util.List;
 
 @WebServlet("/cancel-order")
 public class CancelOrderServlet extends HttpServlet {
 
-    private final OrderDAO orderDAO = new OrderDAO();
+    private OrderDAO orderDAO;
+
+    @Override
+    public void init() throws ServletException {
+        super.init();
+        orderDAO = new OrderDAO();
+    }
 
     @Override
     protected void doPost(HttpServletRequest request,
@@ -52,19 +57,9 @@ public class CancelOrderServlet extends HttpServlet {
 
             int orderId = Integer.parseInt(orderIdParam);
 
-            // 3. Tìm đơn hàng thuộc khách hàng đang đăng nhập
-            List<Order> orders =
-                    orderDAO.findByCustomerId(
-                            customer.getCustomerId());
-
-            Order selectedOrder = null;
-
-            for (Order order : orders) {
-                if (order.getOrderId() == orderId) {
-                    selectedOrder = order;
-                    break;
-                }
-            }
+            // Tìm đơn hàng thuộc khách hàng đang đăng nhập trực tiếp qua DAO
+            Order selectedOrder = orderDAO.findByIdAndCustomerId(
+                    orderId, customer.getCustomerId());
 
             // 4. Không tìm thấy đơn hàng của khách
             if (selectedOrder == null) {

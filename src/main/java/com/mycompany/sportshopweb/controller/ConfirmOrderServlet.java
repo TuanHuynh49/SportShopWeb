@@ -5,9 +5,6 @@ import com.mycompany.sportshopweb.dao.OrderDAO;
 import com.mycompany.sportshopweb.model.Customer;
 import com.mycompany.sportshopweb.model.Order;
 import com.mycompany.sportshopweb.model.OrderStatus;
-import com.mycompany.sportshopweb.util.DBUtil;
-
-import jakarta.persistence.EntityManager;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -16,12 +13,17 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
-import java.util.List;
 
 @WebServlet("/confirm-order")
 public class ConfirmOrderServlet extends HttpServlet {
 
-    private final OrderDAO orderDAO = new OrderDAO();
+    private OrderDAO orderDAO;
+
+    @Override
+    public void init() throws ServletException {
+        super.init();
+        orderDAO = new OrderDAO();
+    }
 
     @Override
     protected void doPost(HttpServletRequest request,
@@ -45,18 +47,8 @@ public class ConfirmOrderServlet extends HttpServlet {
         try {
             int orderId = Integer.parseInt(orderIdParam);
 
-            // Tìm đơn hàng thuộc về khách đang đăng nhập
-            List<Order> orders =
-                orderDAO.findByCustomerId(customer.getCustomerId());
-
-            Order selectedOrder = null;
-
-            for (Order order : orders) {
-                if (order.getOrderId() == orderId) {
-                    selectedOrder = order;
-                    break;
-                }
-            }
+            Order selectedOrder = orderDAO.findByIdAndCustomerId(
+                    orderId, customer.getCustomerId());
 
             if (selectedOrder == null) {
                 response.sendError(

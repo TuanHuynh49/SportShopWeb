@@ -4,7 +4,6 @@
  */
 package com.mycompany.sportshopweb.util;
 
-import com.mycompany.sportshopweb.model.Brand;
 import com.mycompany.sportshopweb.model.Category;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;

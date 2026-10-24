@@ -41,12 +41,6 @@ public Cart findByCustomerId(int customerId) {
         );
 
         Cart cart = query.getSingleResult();
-
-        // Kiểm tra danh sách sau khi truy vấn
-        System.out.println(
-            "Số CartItem qua Cart: " + cart.getCartItems().size()
-        );
-
         return cart;
 
     } catch (NoResultException e) {
@@ -67,9 +61,6 @@ public void insert(Cart cart) {
         em.persist(cart);
 
         trans.commit();
-
-        System.out.println("Đã lưu Cart, customerId = "
-                + cart.getCustomer().getCustomerId());
 
     } catch (Exception e) {
         if (trans.isActive()) {

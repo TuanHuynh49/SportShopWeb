@@ -1,8 +1,15 @@
 
 package com.mycompany.sportshopweb.dao;
 
+import com.mycompany.sportshopweb.model.Adress;
+import com.mycompany.sportshopweb.model.CartItem;
+import com.mycompany.sportshopweb.model.Customer;
 import com.mycompany.sportshopweb.model.Order;
 import com.mycompany.sportshopweb.model.OrderStatus;
+import com.mycompany.sportshopweb.model.Payment;
+import com.mycompany.sportshopweb.model.PaymentMethod;
+import com.mycompany.sportshopweb.model.ProductVariant;
+import com.mycompany.sportshopweb.model.Voucher;
 import com.mycompany.sportshopweb.util.DBUtil;
 
 import jakarta.persistence.CacheRetrieveMode;
@@ -11,6 +18,8 @@ import jakarta.persistence.EntityTransaction;
 import jakarta.persistence.LockModeType;
 import jakarta.persistence.TypedQuery;
 
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 public class OrderDAO {
@@ -302,6 +311,108 @@ public class OrderDAO {
 
             throw e;
 
+        } finally {
+            em.close();
+        }
+    }
+
+    public Order findByIdAndCustomerId(int orderId, int customerId) {
+        if (orderId <= 0 || customerId <= 0) {
+            return null;
+        }
+
+        EntityManager em = DBUtil.getEmFactory().createEntityManager();
+        try {
+            String jpql = "SELECT DISTINCT o FROM Order o "
+                    + "LEFT JOIN FETCH o.orderItems oi "
+                    + "LEFT JOIN FETCH oi.productVariant pv "
+                    + "LEFT JOIN FETCH pv.product p "
+                    + "JOIN FETCH o.customer c "
+                    + "JOIN FETCH c.user "
+                    + "LEFT JOIN FETCH o.address a "
+                    + "WHERE o.orderId = :orderId AND c.customerId = :customerId";
+
+            TypedQuery<Order> query = em.createQuery(jpql, Order.class);
+            query.setParameter("orderId", orderId);
+            query.setParameter("customerId", customerId);
+            query.setHint("jakarta.persistence.cache.retrieveMode", CacheRetrieveMode.BYPASS);
+
+            List<Order> results = query.getResultList();
+            return results.isEmpty() ? null : results.get(0);
+        } finally {
+            em.close();
+        }
+    }
+
+    public Order createOrderTransaction(
+            Customer customer,
+            Adress address,
+            List<CartItem> selectedItems,
+            Voucher voucher,
+            long discount,
+            long finalTotal,
+            String paymentMethod) {
+
+        EntityManager em = DBUtil.getEmFactory().createEntityManager();
+        EntityTransaction transaction = em.getTransaction();
+
+        try {
+            transaction.begin();
+
+            Order order = new Order(customer);
+            order.setOrderStatus(OrderStatus.CONFIRMED);
+            order.setTotalAmount(finalTotal);
+            order.setOrderDate(new Date());
+            order.setVoucher(voucher);
+            order.setDiscountAmount(discount);
+            order.setAddress(address);
+
+            insertOrder(em, order);
+            em.flush();
+
+            ProductVariantDAO productVariantDAO = new ProductVariantDAO();
+            OrderItemDAO orderItemDAO = new OrderItemDAO();
+
+            for (CartItem item : selectedItems) {
+                ProductVariant variant = item.getProductVariant();
+                int variantId = variant.getVariantId();
+                int quantity = item.getQuantity();
+
+                boolean deducted = productVariantDAO.deductStock(em, variantId, quantity);
+                if (!deducted) {
+                    String productName = (variant.getProduct() != null && variant.getProduct().getProductName() != null)
+                            ? variant.getProduct().getProductName()
+                            : "";
+                    String variantName = variant.getVariantName() != null ? variant.getVariantName() : "";
+                    throw new IllegalStateException("Sản phẩm \"" + productName + " - " + variantName + "\" không đủ tồn kho. Vui lòng kiểm tra lại giỏ hàng.");
+                }
+
+                orderItemDAO.insertOrderItem(em, order.getOrderId(), variantId, quantity);
+            }
+
+            if ("COD".equalsIgnoreCase(paymentMethod)) {
+                PaymentDAO paymentDAO = new PaymentDAO();
+                Payment payment = new Payment();
+                payment.setOrderId(order.getOrderId());
+                payment.setPaymentMethod(PaymentMethod.COD);
+                payment.setAmount(order.getTotalAmount());
+                payment.setTransactionCode("COD-" + order.getOrderId());
+                payment.setPaymentTime(LocalDateTime.now());
+
+                paymentDAO.insertPayment(em, payment);
+
+                order.setOrderStatus(OrderStatus.COMPLETED);
+                em.merge(order);
+            }
+
+            transaction.commit();
+            return order;
+
+        } catch (RuntimeException e) {
+            if (transaction.isActive()) {
+                transaction.rollback();
+            }
+            throw e;
         } finally {
             em.close();
         }

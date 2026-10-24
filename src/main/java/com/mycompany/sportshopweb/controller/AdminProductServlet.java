@@ -25,7 +25,8 @@ public class AdminProductServlet extends HttpServlet {
     private static final int PAGE_SIZE = 10;
 
     @Override
-    public void init() {
+    public void init() throws ServletException {
+        super.init();
         productDAO = new ProductDAO();
     }
 

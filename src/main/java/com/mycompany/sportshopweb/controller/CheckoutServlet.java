@@ -4,9 +4,6 @@ package com.mycompany.sportshopweb.controller;
 import com.mycompany.sportshopweb.dao.AdressDAO;
 import com.mycompany.sportshopweb.dao.CartDAO;
 import com.mycompany.sportshopweb.dao.OrderDAO;
-import com.mycompany.sportshopweb.dao.OrderItemDAO;
-import com.mycompany.sportshopweb.dao.PaymentDAO;
-import com.mycompany.sportshopweb.dao.ProductVariantDAO;
 import com.mycompany.sportshopweb.dao.VoucherDAO;
 
 import com.mycompany.sportshopweb.model.Adress;
@@ -14,17 +11,11 @@ import com.mycompany.sportshopweb.model.Cart;
 import com.mycompany.sportshopweb.model.CartItem;
 import com.mycompany.sportshopweb.model.Customer;
 import com.mycompany.sportshopweb.model.Order;
-import com.mycompany.sportshopweb.model.OrderItem;
 import com.mycompany.sportshopweb.model.OrderStatus;
-import com.mycompany.sportshopweb.model.Payment;
 import com.mycompany.sportshopweb.model.PaymentMethod;
 import com.mycompany.sportshopweb.model.ProductVariant;
 import com.mycompany.sportshopweb.model.Voucher;
 
-import com.mycompany.sportshopweb.util.DBUtil;
-
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityTransaction;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -35,9 +26,7 @@ import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -60,23 +49,18 @@ public class CheckoutServlet extends HttpServlet {
     private VoucherDAO voucherDAO;
     private OrderDAO orderDAO;
     private CartDAO cartDAO;
-    private OrderItemDAO orderItemDAO;
     private AdressDAO adressDAO;
-    private PaymentDAO paymentDAO;
-    private ProductVariantDAO productVariantDAO;
 
     // =========================================================
     // INIT: KHỞI TẠO DAO
     // =========================================================
     @Override
     public void init() throws ServletException {
+        super.init();
         voucherDAO = new VoucherDAO();
         orderDAO = new OrderDAO();
         cartDAO = new CartDAO();
-        orderItemDAO = new OrderItemDAO();
         adressDAO = new AdressDAO();
-        paymentDAO = new PaymentDAO();
-        productVariantDAO = new ProductVariantDAO();
     }
 
     // =========================================================
@@ -337,80 +321,14 @@ public class CheckoutServlet extends HttpServlet {
             BigDecimal finalTotal,
             String paymentMethod) {
 
-        EntityManager em =
-                DBUtil.getEmFactory().createEntityManager();
-
-        EntityTransaction transaction = em.getTransaction();
-
-        try {
-            transaction.begin();
-
-            Order order = new Order(customer);
-            order.setOrderStatus(OrderStatus.CONFIRMED);
-            order.setTotalAmount(finalTotal.longValue());
-            order.setOrderDate(new Date());
-            order.setVoucher(voucher);
-            order.setDiscountAmount(discount.longValue());
-            order.setAddress(address);
-
-            // Lưu order trong transaction hiện tại.
-            orderDAO.insertOrder(em, order);
-            em.flush();
-
-            // Lưu các OrderItem trong cùng transaction.
-            for (CartItem item : selectedItems) {
-                    ProductVariant variant = item.getProductVariant();
-
-                    int variantId = variant.getVariantId();
-                    int quantity = item.getQuantity();
-
-                    boolean deducted = productVariantDAO.deductStock(
-                            em, variantId, quantity);
-
-                    if (!deducted) {
-                        String productName = variant.getProduct().getProductName();
-                        String variantName = variant.getVariantName();
-
-                        throw new IllegalStateException(
-                            "Sản phẩm \"" + productName + " - " + variantName
-                            + "\" không đủ tồn kho. Vui lòng kiểm tra lại giỏ hàng."
-                        );
-                    }
-
-                Payment payment = new Payment();
-                payment.setOrderId(order.getOrderId());
-                payment.setPaymentMethod(PaymentMethod.COD);
-                payment.setAmount(order.getTotalAmount());
-                payment.setTransactionCode(
-                        "COD-" + order.getOrderId());
-                payment.setPaymentTime(LocalDateTime.now());
-
-                paymentDAO.insertPayment(em, payment);
-
-                boolean updated = orderDAO.updateOrderStatus(
-                        em, order.getOrderId(), OrderStatus.COMPLETED);
-
-                if (!updated) {
-                    throw new IllegalStateException(
-                            "Không thể cập nhật trạng thái đơn hàng.");
-                }
-            }
-
-            // BANK/VNPAY: giữ CONFIRMED, chờ callback thanh toán.
-            // Không trừ kho ở bước tạo đơn hàng này.
-
-            transaction.commit();
-            return order;
-
-        } catch (RuntimeException e) {
-            if (transaction.isActive()) {
-                transaction.rollback();
-            }
-            throw e;
-
-        } finally {
-            em.close();
-        }
+        return orderDAO.createOrderTransaction(
+                customer,
+                address,
+                selectedItems,
+                voucher,
+                discount.longValue(),
+                finalTotal.longValue(),
+                paymentMethod);
     }
 
     // =========================================================
@@ -700,17 +618,7 @@ public class CheckoutServlet extends HttpServlet {
     }
 
     private Order findCustomerOrder(int customerId, int orderId) {
-        List<Order> orders = orderDAO.findByCustomerId(customerId);
-
-        if (orders != null) {
-            for (Order order : orders) {
-                if (order.getOrderId() == orderId) {
-                    return order;
-                }
-            }
-        }
-
-        return null;
+        return orderDAO.findByIdAndCustomerId(orderId, customerId);
     }
 
     private void clearCheckoutSession(HttpSession session) {

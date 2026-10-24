@@ -23,7 +23,7 @@ public class RAGChatServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        request.getRequestDispatcher("rag-chat.jsp").forward(request, response);
+        response.sendRedirect(request.getContextPath() + "/");
     }
 
     @Override

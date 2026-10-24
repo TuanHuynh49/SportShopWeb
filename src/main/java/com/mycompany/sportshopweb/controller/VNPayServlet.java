@@ -19,7 +19,13 @@ import java.util.UUID;
 public class VNPayServlet extends HttpServlet {
     
 
-    private final PaymentService paymentService = new PaymentService();
+    private PaymentService paymentService;
+
+    @Override
+    public void init() throws ServletException {
+        super.init();
+        paymentService = new PaymentService();
+    }
 
     @Override
     protected void doPost(

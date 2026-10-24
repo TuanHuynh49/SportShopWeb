@@ -23,16 +23,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-@WebServlet(name = "ProductActionServlet", urlPatterns = { "/admin/product-actions", "/ProductActionServlet" })
+@WebServlet(name = "ProductActionServlet", urlPatterns = { "/admin/product-actions" })
 @MultipartConfig(fileSizeThreshold = 1024 * 1024, maxFileSize = 5 * 1024 * 1024, maxRequestSize = 25 * 1024 * 1024)
 public class ProductActionServlet extends HttpServlet {
 
     private ProductDAO productDAO;
 
     @Override
-    public void init() {
+    public void init() throws ServletException {
+        super.init();
         productDAO = new ProductDAO();
-        getServletContext().setAttribute("ProductDAO", productDAO);
     }
 
     @Override
@@ -288,11 +288,8 @@ public class ProductActionServlet extends HttpServlet {
      * Chuẩn bị danh sách thương hiệu và danh mục cho form.
      */
     private void prepareFormData(HttpServletRequest request) {
-        BrandDAO brandDAO = new BrandDAO();
-        CategoryDB categoryDAO = new CategoryDB();
-
-        request.setAttribute("brands", brandDAO.getAllBrand());
-        request.setAttribute("categories", categoryDAO.getAllCategory());
+        request.setAttribute("brands", BrandDAO.getAllBrand());
+        request.setAttribute("categories", CategoryDB.getAllCategory());
     }
 
     private void showFormAfterError(
