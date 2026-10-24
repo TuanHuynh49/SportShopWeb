@@ -20,26 +20,25 @@ import com.mycompany.sportshopweb.util.ParseUtils;
 @WebServlet(name = "HomeServlet", urlPatterns = {"/HomeServlet", "/home"})
 public class HomeServlet extends HttpServlet {
 
-    private static final Set<String> SORTS =
-            Set.of("id_asc", "id_desc", "price_asc", "price_desc", "name_asc");
 
     @Override
     public void init() {
         getServletContext().setAttribute("ProductDAO", new ProductDAO());
         getServletContext().setAttribute("AlbumDAO", new AlbumDAO());
         getServletContext().setAttribute("BrandDAO", new BrandDAO());
+        Set<String> SORTS =Set.of("id_asc", "id_desc", "price_asc", "price_desc", "name_asc");
+        getServletContext().setAttribute("SORTS",SORTS);
     }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
-        // ---- Load Brands, Categories & Albums ----
         List<Category> allCategories = CategoryDB.getAllCategory();
         request.setAttribute("brandList", BrandDAO.getAllBrand());
-        request.setAttribute("categoryList", allCategories); // Dùng cho dropdown bộ lọc sản phẩm
+        request.setAttribute("categoryList", allCategories); 
+        Set<String> SORTS =(Set<String>)getServletContext().getAttribute("SORTS");
 
-        // Phân trang Category (2 dòng x 3 cột = 6 danh mục mỗi trang) bằng Java thuần
         int catPage = ParseUtils.parseIntOrDefault(request.getParameter("catPage"), 1);
         int catPageSize = 6;
         int totalCatPages = (allCategories != null && !allCategories.isEmpty())
@@ -67,7 +66,6 @@ public class HomeServlet extends HttpServlet {
             e.printStackTrace();
         }
 
-        // ---- Filter params ----
         int brandId = ParseUtils.parseIntOrDefault(request.getParameter("brand"), 0);
         int catId = ParseUtils.parseIntOrDefault(request.getParameter("cat"), 0);
         String keyword=request.getParameter("keyword");
