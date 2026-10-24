@@ -128,7 +128,7 @@ public class RegisterServlet extends HttpServlet {
 
         // Gửi mã OTP xác nhận đến Gmail của khách hàng
         String fullName = firstName + " " + lastName;
-        EmailService.sendOtpEmail(email, fullName, otp);
+        EmailService.sendOtpEmail(email, otp, "Xác thực đăng ký tài khoản cho " + fullName);
 
         // Chuyển hướng sang trang xác nhận mã OTP
         response.sendRedirect(request.getContextPath() + "/VerifyOtpServlet");

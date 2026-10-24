@@ -30,7 +30,7 @@ import com.mycompany.sportshopweb.model.Cart;
  *
  * @author Anh Tuan
  */
-@WebServlet(name = "LoginServlet", urlPatterns = { "/LoginServlet" })
+@WebServlet(name = "LoginServlet", urlPatterns = { "/LoginServlet", "/login" })
 public class LoginServlet extends HttpServlet {
 
     private UserDAO userDAO;
@@ -147,10 +147,15 @@ public class LoginServlet extends HttpServlet {
         // Xử lý lưu hoặc xóa Cookie Ghi nhớ đăng nhập
         handleRememberMeCookie(request, response, identifier, request.getParameter("rememberMe"));
         
-        // Lưu thông tin đăng nhập vào Session
+        // Lưu User vào Session và điều hướng theo vai trò (Role-based Routing)
         session.setAttribute("user", user);
-        
-        // Phân quyền: Nếu là Admin thì chuyển đến Admin Dashboard
+        navigateByUserRole(request, response, session, user);
+    }
+
+    // Phân quyền và điều hướng người dùng theo vai trò (Role-based Routing)
+    private void navigateByUserRole(HttpServletRequest request, HttpServletResponse response,
+            HttpSession session, User user) throws IOException {
+        // Kiểm tra xem tài khoản có phải Admin không
         Admin admin = adminDAO.findByUserId(user.getUserId());
         if (admin != null) {
             session.setAttribute("admin", admin);

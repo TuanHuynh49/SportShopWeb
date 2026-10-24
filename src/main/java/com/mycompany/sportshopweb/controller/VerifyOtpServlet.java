@@ -88,7 +88,7 @@ public class VerifyOtpServlet extends HttpServlet {
             session.setAttribute("reg_otp_expiry", newExpiry);
 
             // Gửi lại email qua Brevo API
-            EmailService.sendOtpEmail(regEmail, fullName, newOtp);
+            EmailService.sendOtpEmail(regEmail, newOtp, "Gửi lại mã xác thực cho " + fullName);
 
             request.setAttribute("message", "A new OTP has been sent to your email (" + regEmail + "). Please check your inbox!");
             request.setAttribute("remainingSeconds", 300);

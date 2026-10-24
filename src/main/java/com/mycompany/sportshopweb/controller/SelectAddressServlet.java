@@ -31,10 +31,9 @@ public class SelectAddressServlet extends HttpServlet {
             throws ServletException, IOException {
 
         HttpSession session = request.getSession(false);
-
-        if (session == null) {
+        if (session == null || session.getAttribute("customer") == null) {
             response.sendRedirect(
-                    request.getContextPath() + "/login");
+                    request.getContextPath() + "/LoginServlet");
             return;
         }
 

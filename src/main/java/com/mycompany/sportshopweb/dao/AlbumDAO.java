@@ -149,26 +149,11 @@ public class AlbumDAO {
         EntityTransaction tx = em.getTransaction();
         try {
             tx.begin();
-            List<ProductVariant> variants = new ArrayList<>();
-            if (variantIds != null && !variantIds.isEmpty()) {
-                for (Integer vid : variantIds) {
-                    if (vid != null && vid > 0) {
-                        ProductVariant v = em.find(ProductVariant.class, vid);
-                        if (v != null) {
-                            variants.add(v);
-                        }
-                    }
-                }
-            }
-            album.setItems(variants);
+            album.setItems(loadVariants(em, variantIds));
             em.persist(album);
             tx.commit();
 
-            try {
-                em.getEntityManagerFactory().getCache().evict(Album.class);
-            } catch (Exception ignored) {
-            }
-
+            evictAlbumCache(em);
             return true;
         } catch (Exception e) {
             if (tx.isActive()) {
@@ -201,26 +186,10 @@ public class AlbumDAO {
                 existing.setImageUrl(imageUrl);
             }
 
-            List<ProductVariant> variants = new ArrayList<>();
-            if (variantIds != null && !variantIds.isEmpty()) {
-                for (Integer vid : variantIds) {
-                    if (vid != null && vid > 0) {
-                        ProductVariant v = em.find(ProductVariant.class, vid);
-                        if (v != null) {
-                            variants.add(v);
-                        }
-                    }
-                }
-            }
-            existing.setItems(variants);
-
+            existing.setItems(loadVariants(em, variantIds));
             tx.commit();
 
-            try {
-                em.getEntityManagerFactory().getCache().evict(Album.class);
-            } catch (Exception ignored) {
-            }
-
+            evictAlbumCache(em);
             return true;
         } catch (Exception e) {
             if (tx.isActive()) {
@@ -230,6 +199,30 @@ public class AlbumDAO {
             return false;
         } finally {
             em.close();
+        }
+    }
+
+    // Nạp danh sách ProductVariant từ cơ sở dữ liệu dựa trên danh sách ID (Áp dụng DRY)
+    private static List<ProductVariant> loadVariants(EntityManager em, List<Integer> variantIds) {
+        List<ProductVariant> variants = new ArrayList<>();
+        if (variantIds != null && !variantIds.isEmpty()) {
+            for (Integer vid : variantIds) {
+                if (vid != null && vid > 0) {
+                    ProductVariant v = em.find(ProductVariant.class, vid);
+                    if (v != null) {
+                        variants.add(v);
+                    }
+                }
+            }
+        }
+        return variants;
+    }
+
+    // Xóa bộ nhớ cache của Album để làm mới dữ liệu
+    private static void evictAlbumCache(EntityManager em) {
+        try {
+            em.getEntityManagerFactory().getCache().evict(Album.class);
+        } catch (Exception ignored) {
         }
     }
 }
