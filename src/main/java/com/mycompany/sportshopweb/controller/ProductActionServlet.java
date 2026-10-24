@@ -353,11 +353,17 @@ public class ProductActionServlet extends HttpServlet {
                 continue;
             }
 
+            // Sinh mã định danh ngẫu nhiên duy nhất cho từng ảnh
+            String publicId = "prod_" + System.currentTimeMillis() + "_"
+                    + java.util.UUID.randomUUID().toString().substring(0, 8);
+
             Map<?, ?> result = CloudinaryConfig.getInstance()
                     .uploader()
                     .upload(
                             part.getInputStream().readAllBytes(),
-                            ObjectUtils.asMap("folder", "Product"));
+                            ObjectUtils.asMap(
+                                    "folder", "Product",
+                                    "public_id", publicId));
 
             String imageUrl = (String) result.get("secure_url");
             if (imageUrl == null || imageUrl.isBlank()) {
