@@ -15,7 +15,7 @@ public class CloudinaryConfig {
                 dotenv = Dotenv.configure()
                         .ignoreIfMissing()
                         .load();
-            } catch (Exception ignored) {
+            } catch (Throwable ignored) {
             }
 
             String cloudName = getVal(dotenv, "CLOUDINARY_CLOUD_NAME");
