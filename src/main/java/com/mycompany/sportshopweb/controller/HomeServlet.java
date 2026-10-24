@@ -3,6 +3,7 @@ package com.mycompany.sportshopweb.controller;
 import com.mycompany.sportshopweb.dao.AlbumDAO;
 import com.mycompany.sportshopweb.model.Album;
 import com.mycompany.sportshopweb.dao.BrandDAO;
+import com.mycompany.sportshopweb.model.Category;
 import com.mycompany.sportshopweb.util.CategoryDB;
 import com.mycompany.sportshopweb.dao.ProductDAO;
 import jakarta.servlet.ServletException;
@@ -16,7 +17,7 @@ import java.util.Set;
 import com.mycompany.sportshopweb.util.DBUtil;
 import com.mycompany.sportshopweb.util.ParseUtils;
 
-@WebServlet(name = "HomeServlet", urlPatterns = {"/HomeServlet"})
+@WebServlet(name = "HomeServlet", urlPatterns = {"/HomeServlet", "/home"})
 public class HomeServlet extends HttpServlet {
 
     private static final Set<String> SORTS =
@@ -33,9 +34,29 @@ public class HomeServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
-        // ---- 1. Load Brands, Categories & Albums ----
+        // ---- Load Brands, Categories & Albums ----
+        List<Category> allCategories = CategoryDB.getAllCategory();
         request.setAttribute("brandList", BrandDAO.getAllBrand());
-        request.setAttribute("categoryList", CategoryDB.getAllCategory());
+        request.setAttribute("categoryList", allCategories); // Dùng cho dropdown bộ lọc sản phẩm
+
+        // Phân trang Category (2 dòng x 3 cột = 6 danh mục mỗi trang) bằng Java thuần
+        int catPage = ParseUtils.parseIntOrDefault(request.getParameter("catPage"), 1);
+        int catPageSize = 6;
+        int totalCatPages = (allCategories != null && !allCategories.isEmpty())
+                ? (int) Math.ceil((double) allCategories.size() / catPageSize) : 1;
+        if (catPage < 1) catPage = 1;
+        if (catPage > totalCatPages) catPage = totalCatPages;
+
+        List<Category> displayedCategories = null;
+        if (allCategories != null && !allCategories.isEmpty()) {
+            int start = (catPage - 1) * catPageSize;
+            int end = Math.min(start + catPageSize, allCategories.size());
+            displayedCategories = allCategories.subList(start, end);
+        }
+
+        request.setAttribute("displayedCategories", displayedCategories);
+        request.setAttribute("currentCatPage", catPage);
+        request.setAttribute("totalCatPages", totalCatPages);
         
         try {
             List<Album> albumList = AlbumDAO.getAllAlbums();
@@ -46,7 +67,7 @@ public class HomeServlet extends HttpServlet {
             e.printStackTrace();
         }
 
-        // ---- 2. Filter params ----
+        // ---- Filter params ----
         int brandId = ParseUtils.parseIntOrDefault(request.getParameter("brand"), 0);
         int catId = ParseUtils.parseIntOrDefault(request.getParameter("cat"), 0);
         String keyword=request.getParameter("keyword");

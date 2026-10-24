@@ -22,10 +22,15 @@
                             <p class="subtitle">Quản lý sản phẩm, giá bán và tồn kho.</p>
                         </div>
 
-                        <a class="button button-primary"
-                            href="${pageContext.request.contextPath}/ProductActionServlet?action=create">
-                            + Thêm sản phẩm
-                        </a>
+                        <div style="display: flex; gap: 8px;">
+                            <a class="button" href="${pageContext.request.contextPath}/admin/albums">
+                                Quản lý Albums
+                            </a>
+                            <a class="button button-primary"
+                                href="${pageContext.request.contextPath}/ProductActionServlet?action=create">
+                                + Thêm sản phẩm
+                            </a>
+                        </div>
                     </header>
 
                     <!-- Thông báo sản phẩm -->
@@ -150,6 +155,7 @@
                                 <thead>
                                     <tr>
                                         <th>ID</th>
+                                        <th>Ảnh</th>
                                         <th>Tên sản phẩm</th>
                                         <th>Thương hiệu</th>
                                         <th>Danh mục</th>
@@ -163,7 +169,7 @@
                                     <c:choose>
                                         <c:when test="${empty products}">
                                             <tr>
-                                                <td colspan="7" class="empty-state">
+                                                <td colspan="8" class="empty-state">
                                                     Không tìm thấy sản phẩm.
                                                 </td>
                                             </tr>
@@ -174,6 +180,20 @@
                                                 <tr>
                                                     <td>
                                                         <c:out value="${product.productId}" />
+                                                    </td>
+
+                                                    <td>
+                                                        <c:choose>
+                                                            <c:when test="${not empty product.images and not empty product.images[0].imageUrl}">
+                                                                <img src="${product.images[0].imageUrl}" alt="<c:out value='${product.productName}'/>"
+                                                                     style="width: 44px; height: 44px; object-fit: cover; border-radius: 4px; border: 1px solid #e2e8f0; display: block;">
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                <span style="display: inline-block; width: 44px; height: 44px; line-height: 44px; text-align: center; background: #f1f5f9; color: #94a3b8; border-radius: 4px; font-size: 11px;">
+                                                                    No img
+                                                                </span>
+                                                            </c:otherwise>
+                                                        </c:choose>
                                                     </td>
 
                                                     <td class="product-name">
@@ -228,7 +248,7 @@
                                                 <!-- Phần quản lý biến thể -->
                                                 <c:if test="${manageVariants == product.productId}">
                                                     <tr>
-                                                        <td colspan="7">
+                                                        <td colspan="8">
                                                             <div class="variant-panel">
                                                                 <h3>
                                                                     Quản lý biến thể:

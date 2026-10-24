@@ -322,8 +322,66 @@
 }
 
 /* =========================================
-   5. SHOP BY CATEGORY (LƯỚI 3 CỘT)
+   5. SHOP BY CATEGORY (LƯỚI 3 CỘT, 2 DÒNG)
    ========================================= */
+.section-header-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 24px;
+    gap: 16px;
+}
+
+.category-slider-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #f8fafc;
+    padding: 6px 12px;
+    border-radius: 9999px;
+    border: 1px solid #e2e8f0;
+}
+
+.cat-nav-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    color: #1e293b;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.cat-nav-btn:hover:not(.disabled):not(:disabled) {
+    background: #0f172a;
+    color: #ffffff;
+    border-color: #0f172a;
+    transform: scale(1.05);
+}
+
+.cat-nav-btn.disabled,
+.cat-nav-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    border-color: #e2e8f0;
+    pointer-events: none;
+}
+
+.cat-page-indicator {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #475569;
+    min-width: 42px;
+    text-align: center;
+    user-select: none;
+}
+
 .category-grid {
     list-style: none;
     margin: 0;

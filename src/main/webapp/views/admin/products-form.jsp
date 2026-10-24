@@ -17,6 +17,7 @@
             </title>
 
             <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/admin.css">
+            <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/product-form.css">
         </head>
 
         <body class="admin-body">
@@ -40,6 +41,10 @@
 
                         <a class="active" href="${pageContext.request.contextPath}/admin/products">
                             <span class="admin-nav-icon">▣</span>Products
+                        </a>
+
+                        <a href="${pageContext.request.contextPath}/admin/albums">
+                            <span class="admin-nav-icon">☷</span>Albums
                         </a>
 
                         <a href="${pageContext.request.contextPath}/admin/orders">
@@ -192,8 +197,8 @@
                                     <!-- Initial variant: only required when creating -->
 
                                     <c:if test="${not editMode}">
-                                        <div class="admin-form-group full">
-                                            <h3>Initial Product Variant</h3>
+                                        <div class="admin-form-group full variant-section-header">
+                                            <h3><span style="color: var(--admin-lime);">◈</span> Initial Product Variant</h3>
                                             <p class="help-text">
                                                 Every new product needs an initial variant.
                                                 Stock quantity belongs to the variant, not Product.
@@ -241,13 +246,55 @@
                                     <div class="admin-form-group full">
                                         <label for="images">Product images</label>
 
+                                        <c:if test="${editMode and not empty product.images}">
+                                            <div style="margin-bottom: 16px;">
+                                                <span class="existing-images-header">
+                                                    Ảnh hiện tại (tích chọn "Xóa ảnh" và bấm "Save Changes" để gỡ bỏ):
+                                                </span>
+                                                <div class="images-preview-grid">
+                                                    <c:forEach var="img" items="${product.images}">
+                                                        <div class="img-preview-card">
+                                                            <img src="${img.imageUrl}" alt="Product Image">
+                                                            <c:if test="${img.primary}">
+                                                                <span class="img-primary-badge">Ảnh chính</span>
+                                                            </c:if>
+                                                            <div>
+                                                                <label class="img-delete-label">
+                                                                    <input type="checkbox" name="deleteImageIds" value="${img.productImageId}" onchange="toggleDeleteImage(this)">
+                                                                    Xóa ảnh
+                                                                </label>
+                                                                <span class="img-delete-status">(Sẽ xóa khi lưu)</span>
+                                                            </div>
+                                                        </div>
+                                                    </c:forEach>
+                                                </div>
+                                            </div>
+                                            <script>
+                                                function toggleDeleteImage(cb) {
+                                                    var card = cb.closest('.img-preview-card');
+                                                    var img = card.querySelector('img');
+                                                    var statusText = card.querySelector('.img-delete-status');
+                                                    if (cb.checked) {
+                                                        card.classList.add('marked-delete');
+                                                        img.style.opacity = '0.35';
+                                                        img.style.filter = 'grayscale(100%)';
+                                                        if (statusText) statusText.style.display = 'block';
+                                                    } else {
+                                                        card.classList.remove('marked-delete');
+                                                        img.style.opacity = '1';
+                                                        img.style.filter = 'none';
+                                                        if (statusText) statusText.style.display = 'none';
+                                                    }
+                                                }
+                                            </script>
+                                        </c:if>
+
                                         <input id="images" name="images" type="file" accept="image/*" multiple>
 
                                         <span class="help-text">
                                             <c:choose>
                                                 <c:when test="${editMode}">
-                                                    Image uploads are not processed by the current
-                                                    update action. Existing images will be retained.
+                                                    Select one or more new image files to add to this product. Check "Delete" above if you wish to remove existing images.
                                                 </c:when>
                                                 <c:otherwise>
                                                     Select one or more image files.

@@ -1,14 +1,14 @@
 /**
- * checkout.js - Điều khiển chọn voucher, đồng bộ form đặt hàng và chọn địa chỉ
+ * checkout.js - Xử lý chọn voucher và giữ lại thông tin người nhận khi áp dụng voucher
  */
 
-// Chọn voucher trong danh sách
+// Khi người dùng click nút "Áp dụng" một voucher trong danh sách
 function selectVoucher(button) {
-    var voucherCodeInput = document.getElementById("voucherCode");
-    var voucherForm = document.getElementById("voucherForm");
+    const voucherInput = document.getElementById("voucherCode");
+    const voucherForm = document.getElementById("voucherForm");
 
-    if (voucherCodeInput && button && button.dataset) {
-        voucherCodeInput.value = button.dataset.code;
+    if (voucherInput && button && button.dataset) {
+        voucherInput.value = button.dataset.code;
     }
     if (voucherForm) {
         voucherForm.requestSubmit();
@@ -16,29 +16,26 @@ function selectVoucher(button) {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-    var voucherForm = document.getElementById("voucherForm");
+    const voucherForm = document.getElementById("voucherForm");
+    if (!voucherForm) return;
 
-    // Đồng bộ dữ liệu giao hàng sang form voucher
-    if (voucherForm) {
-        voucherForm.addEventListener("submit", function () {
-            var fullName = document.getElementById("fullName");
-            var phone = document.getElementById("phone");
-            var note = document.getElementById("note");
-            var selectedAddress = document.querySelector('input[name="addressId"]:checked');
-            var paymentMethod = document.querySelector('input[name="paymentMethod"]:checked');
+    // Trước khi gửi mã voucher lên server, copy thông tin giao hàng hiện tại
+    // để sau khi trang reload, người dùng không phải nhập lại họ tên, số điện thoại
+    voucherForm.addEventListener("submit", function () {
+        const getVal = (id) => (document.getElementById(id) || {}).value || "";
+        const getCheckedVal = (name) => (document.querySelector(`input[name="${name}"]:checked`) || {}).value || "";
 
-            var vFullName = document.getElementById("voucherFullName");
-            var vPhone = document.getElementById("voucherPhone");
-            var vNote = document.getElementById("voucherNote");
-            var vAddressId = document.getElementById("voucherAddressId");
-            var vPaymentMethod = document.getElementById("voucherPaymentMethod");
+        const copyMap = {
+            "voucherFullName": getVal("fullName"),
+            "voucherPhone": getVal("phone"),
+            "voucherNote": getVal("note"),
+            "voucherAddressId": getCheckedVal("addressId"),
+            "voucherPaymentMethod": getCheckedVal("paymentMethod")
+        };
 
-            if (vFullName) vFullName.value = fullName ? fullName.value : "";
-            if (vPhone) vPhone.value = phone ? phone.value : "";
-            if (vNote) vNote.value = note ? note.value : "";
-            if (vAddressId) vAddressId.value = selectedAddress ? selectedAddress.value : "";
-            if (vPaymentMethod) vPaymentMethod.value = paymentMethod ? paymentMethod.value : "";
-        });
-    }
-
+        for (const [targetId, val] of Object.entries(copyMap)) {
+            const targetInput = document.getElementById(targetId);
+            if (targetInput) targetInput.value = val;
+        }
+    });
 });

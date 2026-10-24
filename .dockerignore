@@ -1,0 +1,8 @@
+.git
+.gitignore
+target/
+*.class
+python-rag/.venv/
+**/__pycache__/
+**/*.pyc
+.env.local

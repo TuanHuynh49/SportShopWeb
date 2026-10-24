@@ -142,8 +142,6 @@
             </div>
             <ul class="drawer-link-list">
                 <li><a href="${pageContext.request.contextPath}/HomeServlet">HOME PAGE</a></li>
-                <li><a href="${pageContext.request.contextPath}/HomeServlet?tag=hot#products">HOT PRODUCTS</a></li>
-                <li><a href="${pageContext.request.contextPath}/HomeServlet?tag=sale#products">SALE & OFFERS</a></li>
             </ul>
         </div>
 

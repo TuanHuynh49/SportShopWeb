@@ -15,10 +15,10 @@
 
 <body>
 
-    <!-- 1. Nhúng Header dùng chung -->
+    <!-- Nhúng Header dùng chung -->
     <jsp:include page="/views/common/header.jsp" />
 
-    <!-- 2. Phần nội dung chính của Trang Sổ địa chỉ -->
+    <!-- Phần nội dung chính của Trang Sổ địa chỉ -->
     <main class="address-page-wrapper">
 
         <!-- Thanh điều hướng liên kết -->
@@ -205,7 +205,7 @@
 
     </main>
 
-    <!-- 3. Nhúng Footer dùng chung -->
+    <!-- Nhúng Footer dùng chung -->
     <jsp:include page="/views/common/footer.jsp" />
 
 

@@ -11,7 +11,7 @@
 <header class="site-header">
     <div class="header-container">
         
-        <!-- 1. BÊN TRÁI: Nút 3 gạch mở danh mục & Nút tìm kiếm -->
+        <!-- BÊN TRÁI: Nút 3 gạch mở danh mục & Nút tìm kiếm -->
         <div class="header-left">
             <button type="button" class="action-btn hamburger-btn" id="openDrawerBtn" onclick="openDrawer()" title="Open Categories Menu">
                 <i class="fa-solid fa-bars"></i>
@@ -21,7 +21,7 @@
             </a>
         </div>
 
-        <!-- 2. Ở GIỮA: Logo thương hiệu SPORTSHOP -->
+        <!-- Ở GIỮA: Logo thương hiệu SPORTSHOP -->
         <div class="header-center">
             <div class="header-logo">
                 <a href="${pageContext.request.contextPath}/HomeServlet">
@@ -31,7 +31,7 @@
             </div>
         </div>
 
-        <!-- 3. BÊN PHẢI: Tài khoản, Đơn hàng & Giỏ hàng -->
+        <!-- BÊN PHẢI: Tài khoản, Đơn hàng & Giỏ hàng -->
         <div class="header-right header-actions">
             <!-- Nút Quản trị (Dành riêng cho Admin) -->
             <c:if test="${not empty sessionScope.admin}">

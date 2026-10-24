@@ -1,16 +1,16 @@
 /**
- * drawer.js - Điều khiển đóng mở Side Panel (Drawer Menu)
+ * drawer.js - Đóng / Mở menu trượt bên hông (Side Drawer)
  */
 function openDrawer() {
-    var drawer = document.getElementById('drawerMenu');
-    var overlay = document.getElementById('drawerOverlay');
-    if (drawer) drawer.className = 'drawer-menu active';
-    if (overlay) overlay.className = 'drawer-overlay active';
+    const drawer = document.getElementById('drawerMenu');
+    const overlay = document.getElementById('drawerOverlay');
+    if (drawer) drawer.classList.add('active');
+    if (overlay) overlay.classList.add('active');
 }
 
 function closeDrawer() {
-    var drawer = document.getElementById('drawerMenu');
-    var overlay = document.getElementById('drawerOverlay');
-    if (drawer) drawer.className = 'drawer-menu';
-    if (overlay) overlay.className = 'drawer-overlay';
+    const drawer = document.getElementById('drawerMenu');
+    const overlay = document.getElementById('drawerOverlay');
+    if (drawer) drawer.classList.remove('active');
+    if (overlay) overlay.classList.remove('active');
 }

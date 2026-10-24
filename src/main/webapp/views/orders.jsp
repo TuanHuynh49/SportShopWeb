@@ -286,11 +286,17 @@
 <!-- Only unpaid orders can show payment and cancel buttons -->
 <c:if test="${status eq 'CONFIRMED'}">
 
-    <a class="order-detail-btn"
-       href="${pageContext.request.contextPath}/payment?orderId=${order.orderId}">
+   <form action="${pageContext.request.contextPath}/vnpay-create"
+      method="post">
+    <input type="hidden"
+           name="orderId"
+           value="${order.orderId}">
+
+    <button type="submit" class="order-detail-btn">
         Thanh toán ngay
         <i class="fa-solid fa-credit-card"></i>
-    </a>
+    </button>
+</form>
 
     <form action="${pageContext.request.contextPath}/cancel-order"
           method="post"

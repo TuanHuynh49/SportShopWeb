@@ -1,49 +1,43 @@
 /**
- * orders.js - Điều khiển bộ lọc trạng thái đơn hàng (Tabs: Tất cả, Chờ xử lý, v.v.)
+ * orders.js - Lọc danh sách đơn hàng theo trạng thái (Tất cả, Chờ xử lý, Đã giao...)
  */
 document.addEventListener("DOMContentLoaded", function () {
     const tabs = document.querySelectorAll(".order-tab");
     const cards = document.querySelectorAll(".order-card");
     const emptyMessage = document.getElementById("filteredEmpty");
 
-    function filterOrders(filter) {
+    // Hàm lọc đơn hàng theo trạng thái đã chọn
+    function filterOrders(selectedStatus) {
         let visibleCount = 0;
 
+        // Duyệt qua từng đơn hàng để ẩn hoặc hiện
         cards.forEach(function (card) {
-            const status = card.dataset.status;
+            const orderStatus = card.dataset.status;
+            const isVisible = (selectedStatus === "ALL" || orderStatus === selectedStatus);
 
-            let visible;
-
-            if (filter === "ALL") {
-                visible = true;
-            } else {
-                visible = status === filter;
-            }
-
-            card.style.display = visible ? "" : "none";
-
-            if (visible) {
-                visibleCount++;
-            }
+            card.style.display = isVisible ? "" : "none";
+            if (isVisible) visibleCount++;
         });
 
+        // Cập nhật giao diện tab nào đang được kích hoạt (active)
         tabs.forEach(function (tab) {
-            const isActive = tab.dataset.filter === filter;
-            tab.classList.toggle("active", isActive);
+            tab.classList.toggle("active", tab.dataset.filter === selectedStatus);
         });
 
+        // Nếu không có đơn hàng nào khớp bộ lọc thì hiện thông báo rỗng
         if (emptyMessage) {
-            emptyMessage.style.display =
-                visibleCount === 0 ? "block" : "none";
+            emptyMessage.style.display = visibleCount === 0 ? "block" : "none";
         }
     }
 
+    // Gắn sự kiện click cho từng tab lọc
     tabs.forEach(function (tab) {
         tab.addEventListener("click", function () {
             filterOrders(tab.dataset.filter);
         });
     });
 
+    // Mặc định ban đầu: hiển thị tất cả đơn hàng ("ALL")
     if (tabs.length > 0) {
         filterOrders("ALL");
     }

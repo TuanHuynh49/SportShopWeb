@@ -20,9 +20,12 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.Cookie;
+        
 import com.mycompany.sportshopweb.dao.CartDAO;
 import com.mycompany.sportshopweb.model.Cart;
 import com.mycompany.sportshopweb.model.CartItem;
+
 
 /**
  *
@@ -35,6 +38,25 @@ public class LoginServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        // Lấy toàn bộ danh sách cookie mà trình duyệt gửi lên
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null){
+            for (Cookie c : cookies){
+                if ("remember_identifier".equals(c.getName())){
+                    // Đẩy giá trị email/sdt và trạng thái đã tick sang giao diện JSP
+                    request.setAttribute("identifier", c.getValue());
+                    request.setAttribute("rememberMe", true);
+                    break;
+                }
+            }
+        }
+        // Lấy thông báo thành công từ session (nếu có, ví dụ sau khi đổi mật khẩu)
+        HttpSession session = request.getSession(false);
+        if (session != null && session.getAttribute("message") != null) {
+            request.setAttribute("message", session.getAttribute("message"));
+            session.removeAttribute("message");
+        }
+        
         request.getRequestDispatcher("/views/login.jsp").forward(request, response);
     }
 
@@ -45,7 +67,7 @@ public class LoginServlet extends HttpServlet {
         // Thiết lập mã hóa tiếng Việt
         request.setCharacterEncoding("UTF-8");
 
-        // 1. Lấy dữ liệu từ form login.jsp
+        // Lấy dữ liệu từ form login.jsp
         String identifier = request.getParameter("identifier");
         String password = request.getParameter("password");
 
@@ -56,48 +78,62 @@ public class LoginServlet extends HttpServlet {
         // Giữ lại tên đăng nhập để người dùng không phải gõ lại nếu sai mật khẩu
         request.setAttribute("identifier", identifier);
 
-        // 2. Kiểm tra không được bỏ trống
+        // Kiểm tra không được bỏ trống
         if (identifier == null || identifier.isEmpty() || password == null || password.isEmpty()) {
             request.setAttribute("error", "Please enter your email/phone and password.");
             request.getRequestDispatcher("/views/login.jsp").forward(request, response);
             return;
         }
 
-        // 3. Tìm tài khoản trong database theo email hoặc số điện thoại
+        // Tìm tài khoản trong database theo email hoặc số điện thoại
         UserDAO userDAO = new UserDAO();
         User user = userDAO.findByIdentifier(identifier);
 
-        // 4. Nếu không tìm thấy người dùng
+        // Nếu không tìm thấy người dùng
         if (user == null) {
             request.setAttribute("error", "Invalid email/phone or password.");
             request.getRequestDispatcher("/views/login.jsp").forward(request, response);
             return;
         }
 
-        // 5. Kiểm tra tài khoản có bị khóa không
+        // Kiểm tra tài khoản có bị khóa không
         if (user.getStatus() != null && user.getStatus() != AccountStatus.ACTIVE) {
             request.setAttribute("error", "Your account has been locked or deactivated. Please contact support.");
             request.getRequestDispatcher("/views/login.jsp").forward(request, response);
             return;
         }
 
-        // 6. Kiểm tra tính trùng khớp của mật khẩu
+        // Kiểm tra tính trùng khớp của mật khẩu
         boolean isPasswordCorrect = PasswordUtil.verifyPassword(password, user.getPasswordHash());
         if (!isPasswordCorrect) {
             request.setAttribute("error", "Invalid email/phone or password.");
             request.getRequestDispatcher("/views/login.jsp").forward(request, response);
             return;
         }
-        // 7. Mật khẩu đúng -> Kiểm tra tài khoản có phải Admin không
+        
+        // Lấy giá trị checkbox rememberMe và lưu cookie
+        String rememberMe = request.getParameter("rememberMe");
+        Cookie cookie = new Cookie("remember_identifier", identifier);
+        cookie.setPath(request.getContextPath().isEmpty() ? "/": request.getContextPath());
+        cookie.setHttpOnly(true);
+        
+        if ("true".equals(rememberMe)){
+            cookie.setMaxAge(7*24*60*60);
+        } else {
+            // Bỏ tick -> Xóa cookie
+            cookie.setMaxAge(0);
+        }
+        response.addCookie(cookie);
+        
+        // Kiểm tra tài khoản có phải Admin không
         AdminDAO adminDAO = new AdminDAO();
         Admin admin = adminDAO.findByUserId(user.getUserId());
 
-        // 8. Lưu thông tin đăng nhập vào Session
+        // Lưu thông tin đăng nhập vào Session
         HttpSession session = request.getSession();
         session.setAttribute("user", user);
         
-
-        // 9. Nếu là Admin -> Chuyển đến Admin Dashboard
+        // Nếu là Admin -> Chuyển đến Admin Dashboard
         if (admin != null) {
             session.setAttribute("admin", admin);
 
@@ -106,7 +142,7 @@ public class LoginServlet extends HttpServlet {
             return;
         }
 
-        // 10. Nếu không phải Admin -> Xử lý như User thông thường
+        // Nếu không phải Admin -> Xử lý như User thông thường
         CustomerDAO customerDAO = new CustomerDAO();
         Customer customer = customerDAO.findByUserId(user.getUserId());
 
@@ -115,7 +151,8 @@ public class LoginServlet extends HttpServlet {
 
         response.sendRedirect(
                 request.getContextPath() + "/HomeServlet");
-
+        
+        
     }
     private void updateCartCount(HttpSession session, int customerId) {
     CartDAO cartDAO = new CartDAO();

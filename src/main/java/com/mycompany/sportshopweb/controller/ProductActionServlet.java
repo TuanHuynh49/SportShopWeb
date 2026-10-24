@@ -163,12 +163,33 @@ public class ProductActionServlet extends HttpServlet {
 
         try {
             if (isUpdate) {
+                // Đọc danh sách ID ảnh cần xóa (nếu admin chọn)
+                String[] deleteIdsArr = request.getParameterValues("deleteImageIds");
+                List<Integer> deleteImageIds = new ArrayList<>();
+                if (deleteIdsArr != null) {
+                    for (String idStr : deleteIdsArr) {
+                        try {
+                            int id = Integer.parseInt(idStr.trim());
+                            if (id > 0) {
+                                deleteImageIds.add(id);
+                            }
+                        } catch (NumberFormatException ignored) {
+                        }
+                    }
+                }
+
+                Product productRef = new Product();
+                productRef.setProductId(productId);
+                List<ProductImage> newImages = uploadImages(request, productRef, false);
+
                 boolean updated = productDAO.updateProduct(
                         productId,
                         name.trim(),
                         description,
                         brandId,
-                        categoryId);
+                        categoryId,
+                        newImages,
+                        deleteImageIds);
 
                 if (!updated) {
                     response.sendError(
@@ -228,46 +249,8 @@ public class ProductActionServlet extends HttpServlet {
             product.setProductName(name.trim());
             product.setDescription(description);
 
-            // Giữ nguyên chức năng upload nhiều ảnh lên Cloudinary.
-            List<ProductImage> images = new ArrayList<>();
-            int order = 0;
-
-            for (Part part : request.getParts()) {
-                if (!"images".equals(part.getName())
-                        || part.getSize() == 0) {
-                    continue;
-                }
-
-                String contentType = part.getContentType();
-
-                if (contentType == null
-                        || !contentType.toLowerCase().startsWith("image/")) {
-                    continue;
-                }
-
-                Map<?, ?> result = CloudinaryConfig.getInstance()
-                        .uploader()
-                        .upload(
-                                part.getInputStream().readAllBytes(),
-                                ObjectUtils.asMap("folder", "Product"));
-
-                String imageUrl = (String) result.get("secure_url");
-
-                if (imageUrl == null || imageUrl.isBlank()) {
-                    throw new IOException(
-                            "Cloudinary did not return a secure image URL.");
-                }
-
-                ProductImage image = new ProductImage();
-                image.setImageUrl(imageUrl);
-                image.setPrimary(order == 0);
-                image.setSortOrder(order++);
-                image.setCreatedAt(LocalDateTime.now());
-                image.setProduct(product);
-
-                images.add(image);
-            }
-
+            // Tải lên các file ảnh (nếu có)
+            List<ProductImage> images = uploadImages(request, product, true);
             product.setImages(images);
 
             // Lưu Product và ProductVariant trong cùng transaction.
@@ -355,5 +338,48 @@ public class ProductActionServlet extends HttpServlet {
         request.getRequestDispatcher(
                 "/views/admin/products-form.jsp")
                 .forward(request, response);
+    }
+
+    /**
+     * Tải lên các file ảnh từ request lên Cloudinary và trả về danh sách ProductImage.
+     */
+    private List<ProductImage> uploadImages(HttpServletRequest request, Product product, boolean isCreate)
+            throws IOException, ServletException {
+
+        List<ProductImage> images = new ArrayList<>();
+        int order = 0;
+
+        for (Part part : request.getParts()) {
+            if (!"images".equals(part.getName()) || part.getSize() == 0) {
+                continue;
+            }
+
+            String contentType = part.getContentType();
+            if (contentType == null || !contentType.toLowerCase().startsWith("image/")) {
+                continue;
+            }
+
+            Map<?, ?> result = CloudinaryConfig.getInstance()
+                    .uploader()
+                    .upload(
+                            part.getInputStream().readAllBytes(),
+                            ObjectUtils.asMap("folder", "Product"));
+
+            String imageUrl = (String) result.get("secure_url");
+            if (imageUrl == null || imageUrl.isBlank()) {
+                throw new IOException("Cloudinary did not return a secure image URL.");
+            }
+
+            ProductImage image = new ProductImage();
+            image.setImageUrl(imageUrl);
+            image.setPrimary(isCreate && (order == 0));
+            image.setSortOrder(order++);
+            image.setCreatedAt(LocalDateTime.now());
+            image.setProduct(product);
+
+            images.add(image);
+        }
+
+        return images;
     }
 }

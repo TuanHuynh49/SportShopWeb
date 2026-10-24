@@ -17,10 +17,10 @@
     </head>
     <body>
 
-        <!-- 1. Nhúng Header dùng chung -->
+        <!-- Nhúng Header dùng chung -->
         <jsp:include page="/views/common/header.jsp" />
 
-        <!-- 2. Phần nội dung chính: Bố cục 2 cột (Split-Screen Card) đồng bộ với trang Login -->
+        <!-- Phần nội dung chính: Bố cục 2 cột (Split-Screen Card) đồng bộ với trang Login -->
         <main class="auth-wrapper">
             <div class="auth-split-card auth-split-card-register">
                 
@@ -241,23 +241,6 @@
                             <i class="fa-solid fa-arrow-right"></i>
                         </button>
 
-                        <!-- Dòng phân cách "or" -->
-                        <div class="auth-divider">
-                            <span>or sign up with</span>
-                        </div>
-
-                        <!-- Đăng ký nhanh bằng Google / Apple -->
-                        <div class="social-buttons">
-                            <button type="button" class="btn-social">
-                                <i class="fa-brands fa-google google-icon"></i>
-                                <span>Sign up with Google</span>
-                            </button>
-                            <button type="button" class="btn-social">
-                                <i class="fa-brands fa-apple apple-icon"></i>
-                                <span>Sign up with Apple</span>
-                            </button>
-                        </div>
-
                         <!-- Chuyển hướng sang trang đăng nhập -->
                         <div class="auth-footer">
                             Already have an account? 
@@ -271,10 +254,10 @@
             </div>
         </main>
 
-        <!-- 3. Nhúng Footer dùng chung -->
+        <!-- Nhúng Footer dùng chung -->
         <jsp:include page="/views/common/footer.jsp" />
 
-        <!-- 4. Nhúng script bật/tắt ẩn hiện mật khẩu -->
+        <!-- Nhúng script bật/tắt ẩn hiện mật khẩu -->
         <script src="${pageContext.request.contextPath}/assets/js/password-toggle.js"></script>
 
     </body>

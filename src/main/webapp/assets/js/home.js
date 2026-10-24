@@ -1,14 +1,14 @@
 /**
- * home.js - Script điều khiển trượt Hero Banner trang chủ
+ * home.js - Điều khiển trình chiếu Banner chính (Hero Slider) trên trang chủ
+ * (Phần Shop by Category đã được chuyển sang 100% Java Servlet & JSP thuần qua tham số ?catPage=...)
  */
-var currentHeroIndex = 0;
+let currentHeroIndex = 0;
 
 function showHeroSlide(index) {
-    var slides = document.querySelectorAll('.album-hero-slide');
+    const slides = document.querySelectorAll('.album-hero-slide');
     if (!slides || slides.length <= 1) return;
-    for (var i = 0; i < slides.length; i++) {
-        slides[i].classList.remove('active');
-    }
+
+    slides.forEach(slide => slide.classList.remove('active'));
     currentHeroIndex = (index + slides.length) % slides.length;
     slides[currentHeroIndex].classList.add('active');
 }
@@ -21,9 +21,9 @@ function nextHeroSlide() {
     showHeroSlide(currentHeroIndex + 1);
 }
 
-// Tự động chuyển slide nhẹ nhàng sau mỗi 6 giây nếu có nhiều hơn 1 slide
-setInterval(function() {
-    var slides = document.querySelectorAll('.album-hero-slide');
+// Tự động chuyển banner sau mỗi 6 giây
+setInterval(function () {
+    const slides = document.querySelectorAll('.album-hero-slide');
     if (slides && slides.length > 1) {
         nextHeroSlide();
     }

@@ -4,6 +4,7 @@ package com.mycompany.sportshopweb.dao;
 import com.mycompany.sportshopweb.model.Brand;
 import com.mycompany.sportshopweb.model.Category;
 import com.mycompany.sportshopweb.model.Product;
+import com.mycompany.sportshopweb.model.ProductImage;
 import com.mycompany.sportshopweb.model.ProductVariant;
 import com.mycompany.sportshopweb.util.DBUtil;
 import jakarta.persistence.EntityManager;
@@ -186,6 +187,12 @@ public class ProductDAO {
             em.persist(product);
             em.flush();
 
+            if (product.getImages() != null && !product.getImages().isEmpty()) {
+                for (ProductImage img : product.getImages()) {
+                    img.setProduct(product);
+                    em.persist(img);
+                }
+            }
             ProductVariant variant = new ProductVariant();
             variant.setProduct(product);
             variant.setVariantName(variantName);
@@ -197,6 +204,13 @@ public class ProductDAO {
             em.persist(variant);
 
             tx.commit();
+
+            try {
+                em.getEntityManagerFactory().getCache().evict(Product.class);
+                em.getEntityManagerFactory().getCache().evict(ProductImage.class);
+                em.getEntityManagerFactory().getCache().evict(ProductVariant.class);
+            } catch (Exception ignored) {
+            }
 
             return product.getProductId();
 
@@ -220,6 +234,17 @@ public class ProductDAO {
             String description,
             int brandId,
             int categoryId) {
+        return updateProduct(productId, productName, description, brandId, categoryId, null, null);
+    }
+
+    public boolean updateProduct(
+            int productId,
+            String productName,
+            String description,
+            int brandId,
+            int categoryId,
+            List<ProductImage> newImages,
+            List<Integer> deleteImageIds) {
 
         EntityManager em = DBUtil.getEmFactory().createEntityManager();
         EntityTransaction tx = em.getTransaction();
@@ -239,7 +264,68 @@ public class ProductDAO {
             product.setBrand(em.getReference(Brand.class, brandId));
             product.setCategory(em.getReference(Category.class, categoryId));
 
+            // Đảm bảo list images của product được load vào memory
+            if (product.getImages() == null) {
+                product.setImages(new ArrayList<>());
+            } else {
+                product.getImages().size(); // force lazy load
+            }
+
+            // 1. Xóa các ảnh được chỉ định
+            if (deleteImageIds != null && !deleteImageIds.isEmpty()) {
+                // Xóa khỏi danh sách in-memory của product trước
+                product.getImages().removeIf(img -> deleteImageIds.contains(img.getProductImageId()));
+
+                // Xóa trực tiếp trong database bằng JPQL
+                em.createQuery(
+                        "DELETE FROM ProductImage pi WHERE pi.productImageId IN :delIds AND pi.product.productId = :pid")
+                        .setParameter("delIds", deleteImageIds)
+                        .setParameter("pid", productId)
+                        .executeUpdate();
+            }
+
+            // 2. Thêm các ảnh mới được tải lên
+            if (newImages != null && !newImages.isEmpty()) {
+                int currentOrder = product.getImages().size();
+                boolean hasExistingImages = !product.getImages().isEmpty();
+
+                for (int i = 0; i < newImages.size(); i++) {
+                    ProductImage img = newImages.get(i);
+                    img.setProduct(product);
+                    img.setSortOrder(currentOrder + i);
+                    if (!hasExistingImages && i == 0) {
+                        img.setPrimary(true);
+                    } else {
+                        img.setPrimary(false);
+                    }
+                    em.persist(img);
+                    product.getImages().add(img);
+                }
+            }
+
+            // 3. Đảm bảo luôn có 1 ảnh chính nếu sản phẩm còn ảnh
+            if (!product.getImages().isEmpty()) {
+                boolean hasPrimary = false;
+                for (ProductImage img : product.getImages()) {
+                    if (img.isPrimary()) {
+                        hasPrimary = true;
+                        break;
+                    }
+                }
+                if (!hasPrimary) {
+                    product.getImages().get(0).setPrimary(true);
+                }
+            }
+
             tx.commit();
+
+            // Xóa cache EclipseLink để đảm bảo các query tiếp theo load dữ liệu mới nhất
+            try {
+                em.getEntityManagerFactory().getCache().evict(Product.class, productId);
+                em.getEntityManagerFactory().getCache().evict(ProductImage.class);
+            } catch (Exception ignored) {
+            }
+
             return true;
 
         } catch (RuntimeException e) {
@@ -278,6 +364,13 @@ public class ProductDAO {
                     .executeUpdate();
 
             tx.commit();
+
+            try {
+                em.getEntityManagerFactory().getCache().evict(Product.class, productId);
+                em.getEntityManagerFactory().getCache().evict(ProductVariant.class);
+            } catch (Exception ignored) {
+            }
+
             return true;
 
         } catch (RuntimeException e) {

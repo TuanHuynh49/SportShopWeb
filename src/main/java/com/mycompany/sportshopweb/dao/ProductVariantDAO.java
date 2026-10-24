@@ -157,4 +157,22 @@ public class ProductVariantDAO {
             em.close();
         }
     }
+
+    /**
+     * Lấy tất cả biến thể kèm theo thông tin sản phẩm và ảnh sản phẩm
+     */
+    public List<ProductVariant> getAllVariantsWithProducts() {
+        EntityManager em = DBUtil.getEmFactory().createEntityManager();
+        try {
+            return em.createQuery(
+                    "SELECT DISTINCT v FROM ProductVariant v "
+                            + "JOIN FETCH v.product p "
+                            + "LEFT JOIN FETCH p.images "
+                            + "ORDER BY p.productId DESC, v.variantId ASC",
+                    ProductVariant.class)
+                    .getResultList();
+        } finally {
+            em.close();
+        }
+    }
 }

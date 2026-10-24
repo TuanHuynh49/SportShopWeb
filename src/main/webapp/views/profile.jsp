@@ -17,10 +17,10 @@
     </head>
     <body>
 
-        <!-- 1. Nhúng Header dùng chung -->
+        <!-- Nhúng Header dùng chung -->
         <jsp:include page="/views/common/header.jsp" />
 
-        <!-- 2. Phần nội dung chính của Trang Hồ sơ cá nhân -->
+        <!-- Phần nội dung chính của Trang Hồ sơ cá nhân -->
         <main class="profile-wrapper">
             
             <!-- Kiểm tra: Nếu chưa đăng nhập thì hiện thông báo yêu cầu đăng nhập -->
@@ -84,13 +84,13 @@
 
                         <!-- Danh sách menu con trong tài khoản -->
                         <ul class="profile-nav-list">
-                            <li class="profile-nav-item ${empty activeTab || activeTab == 'info' ? 'active' : ''}" id="tab-info-btn">
-                                <a href="javascript:void(0)" onclick="switchTab('info')">
+                            <li class="profile-nav-item ${empty activeTab || activeTab == 'info' ? 'active' : ''}">
+                                <a href="${pageContext.request.contextPath}/ProfileServlet?tab=info">
                                     <i class="fa-solid fa-id-card"></i> Personal Info
                                 </a>
                             </li>
-                            <li class="profile-nav-item ${activeTab == 'password' ? 'active' : ''}" id="tab-password-btn">
-                                <a href="javascript:void(0)" onclick="switchTab('password')">
+                            <li class="profile-nav-item ${activeTab == 'password' ? 'active' : ''}">
+                                <a href="${pageContext.request.contextPath}/ProfileServlet?tab=password">
                                     <i class="fa-solid fa-key"></i> Change Password
                                 </a>
                             </li>
@@ -257,11 +257,8 @@
 
         </main>
 
-        <!-- 3. Nhúng Footer dùng chung -->
+        <!-- Nhúng Footer dùng chung -->
         <jsp:include page="/views/common/footer.jsp" />
-
-        <!-- 4. Script chuyển tab mượt mà -->
-        <script src="${pageContext.request.contextPath}/assets/js/profile.js"></script>
 
     </body>
 </html>

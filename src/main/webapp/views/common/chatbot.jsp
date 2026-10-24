@@ -4,12 +4,12 @@
 <!-- Link CSS của Chatbot -->
 <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/chatbot.css">
 
-<!-- 1. Icon nổi CỐ ĐỊNH ở góc dưới phải màn hình -->
+<!-- Icon nổi CỐ ĐỊNH ở góc dưới phải màn hình -->
 <button type="button" class="chatbot-toggler" id="chatToggler" title="Trợ lý tư vấn SportShop">
     <i class="fa-solid fa-comments"></i>
 </button>
 
-<!-- 2. Hộp thoại Chatbox CỐ ĐỊNH ngay phía trên icon -->
+<!-- Hộp thoại Chatbox CỐ ĐỊNH ngay phía trên icon -->
 <div class="chatbot-box" id="chatBox">
     
     <!-- Tiêu đề Chat -->
@@ -41,5 +41,5 @@
 
 </div>
 
-<!-- 3. Link file JavaScript điều khiển riêng biệt -->
+<!-- Link file JavaScript điều khiển riêng biệt -->
 <script src="${pageContext.request.contextPath}/assets/js/chatbot.js"></script>

@@ -1,8 +1,9 @@
-
 package com.mycompany.sportshopweb.controller;
 
 // ProductDB nằm trong package util, không phải package dao.
+import com.mycompany.sportshopweb.dao.AdminDashboardDAO;
 import com.mycompany.sportshopweb.dao.ProductDAO;
+import com.mycompany.sportshopweb.model.Order;
 import com.mycompany.sportshopweb.model.Product;
 
 import jakarta.servlet.ServletException;
@@ -18,7 +19,7 @@ import java.util.List;
  * Controller xử lý request truy cập trang Admin Dashboard.
  *
  * Nhiệm vụ:
- * 1. Lấy dữ liệu tổng quan cần hiển thị.
+ * 1. Lấy dữ liệu tổng quan cần hiển thị (doanh thu, đơn hàng, khách hàng mới).
  * 2. Lấy danh sách sản phẩm theo trang.
  * 3. Chuyển dữ liệu sang JSP để hiển thị.
  */
@@ -33,10 +34,18 @@ public class AdminDashboardServlet extends HttpServlet {
             throws ServletException, IOException {
 
         try {
-            // 1. Đếm tổng số sản phẩm trong hệ thống.
+            // 1. Thống kê tổng quan từ AdminDashboardDAO
+            AdminDashboardDAO dashboardDAO = new AdminDashboardDAO();
+            long todayRevenue = dashboardDAO.getTodayRevenue();
+            long monthRevenue = dashboardDAO.getMonthRevenue();
+            long newOrderCount = dashboardDAO.getTodayOrderCount();
+            long newCustomerCount = dashboardDAO.getTodayCustomerCount();
+            List<Order> recentOrders = dashboardDAO.getRecentOrders();
+
+            // 2. Đếm tổng số sản phẩm trong hệ thống.
             long totalProducts = ProductDAO.countProducts();
 
-            // 2. Đọc số trang từ URL.
+            // 3. Đọc số trang từ URL.
             int page = 1;
 
             String pageParam = request.getParameter("page");
@@ -55,7 +64,7 @@ public class AdminDashboardServlet extends HttpServlet {
                 page = 1;
             }
 
-            // 3. Xác định kích thước trang từ ProductDB.
+            // 4. Xác định kích thước trang từ ProductDB.
             int pageSize = ProductDAO.PAGE_SIZE;
 
             // Tính tổng số trang.
@@ -70,17 +79,23 @@ public class AdminDashboardServlet extends HttpServlet {
                 page = (int) totalPages;
             }
 
-            // 4. Lấy danh sách sản phẩm của trang hiện tại.
+            // 5. Lấy danh sách sản phẩm của trang hiện tại.
             List<Product> products = ProductDAO.getProductsByPage(page, pageSize);
 
-            // 5. Đưa dữ liệu vào request để JSP sử dụng.
+            // 6. Đưa dữ liệu vào request để JSP sử dụng.
+            request.setAttribute("todayRevenue", todayRevenue);
+            request.setAttribute("monthRevenue", monthRevenue);
+            request.setAttribute("newOrderCount", newOrderCount);
+            request.setAttribute("newCustomerCount", newCustomerCount);
+            request.setAttribute("recentOrders", recentOrders);
+
             request.setAttribute("totalProducts", totalProducts);
             request.setAttribute("products", products);
             request.setAttribute("currentPage", page);
             request.setAttribute("pageSize", pageSize);
             request.setAttribute("totalPages", totalPages);
 
-            // 6. Chuyển tiếp sang JSP Dashboard.
+            // 7. Chuyển tiếp sang JSP Dashboard.
             request.getRequestDispatcher(
                     "/views/admin/dashboard.jsp").forward(request, response);
 
