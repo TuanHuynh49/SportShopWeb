@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-@WebServlet(name = "ProductActionServlet", urlPatterns = { "/ProductActionServlet" })
+@WebServlet(name = "ProductActionServlet", urlPatterns = { "/admin/product-actions", "/ProductActionServlet" })
 @MultipartConfig(fileSizeThreshold = 1024 * 1024, maxFileSize = 5 * 1024 * 1024, maxRequestSize = 25 * 1024 * 1024)
 public class ProductActionServlet extends HttpServlet {
 
@@ -47,6 +47,9 @@ public class ProductActionServlet extends HttpServlet {
 
         if ("edit".equals(action)) {
             String idStr = request.getParameter("productId");
+            if (idStr == null || idStr.isBlank()) {
+                idStr = request.getParameter("id");
+            }
 
             int productId;
 
