@@ -62,7 +62,6 @@
         <ul class="album-items-grid">
             <c:forEach var="item" items="${album.items}">
                 <li class="album-item-card">
-                    <!-- Ảnh sản phẩm -->
                     <div class="album-item-thumb">
                         <c:choose>
                             <c:when test="${not empty item.product && not empty item.product.images}">

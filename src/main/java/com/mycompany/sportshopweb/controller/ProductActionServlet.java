@@ -295,9 +295,6 @@ public class ProductActionServlet extends HttpServlet {
         request.setAttribute("categories", categoryDAO.getAllCategory());
     }
 
-    /**
-     * Hiển thị lại form khi có lỗi.
-     */
     private void showFormAfterError(
             HttpServletRequest request,
             HttpServletResponse response,
@@ -343,9 +340,6 @@ public class ProductActionServlet extends HttpServlet {
                 .forward(request, response);
     }
 
-    /**
-     * Tải lên các file ảnh từ request lên Cloudinary và trả về danh sách ProductImage.
-     */
     private List<ProductImage> uploadImages(HttpServletRequest request, Product product, boolean isCreate)
             throws IOException, ServletException {
 
