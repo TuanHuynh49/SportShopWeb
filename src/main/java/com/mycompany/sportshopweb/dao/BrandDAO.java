@@ -5,7 +5,6 @@
 package com.mycompany.sportshopweb.dao;
 
 import com.mycompany.sportshopweb.model.Brand;
-import com.mycompany.sportshopweb.model.Product;
 import com.mycompany.sportshopweb.util.DBUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;

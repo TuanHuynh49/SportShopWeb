@@ -16,7 +16,13 @@ import java.util.List;
 @WebServlet(name = "AdminCustomerServlet", urlPatterns = { "/admin/customers" })
 public class AdminCustomerServlet extends HttpServlet {
 
-    private final AdminCustomerDAO adminCustomerDAO = new AdminCustomerDAO();
+    private AdminCustomerDAO adminCustomerDAO;
+
+    @Override
+    public void init() throws ServletException {
+        super.init();
+        adminCustomerDAO = new AdminCustomerDAO();
+    }
 
     @Override
     protected void doGet(

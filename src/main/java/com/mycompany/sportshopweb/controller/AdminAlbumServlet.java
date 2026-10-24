@@ -25,7 +25,13 @@ import java.util.Map;
 @MultipartConfig(fileSizeThreshold = 1024 * 1024, maxFileSize = 10 * 1024 * 1024, maxRequestSize = 25 * 1024 * 1024)
 public class AdminAlbumServlet extends HttpServlet {
 
-    private final ProductVariantDAO variantDAO = new ProductVariantDAO();
+    private ProductVariantDAO variantDAO;
+
+    @Override
+    public void init() throws ServletException {
+        super.init();
+        variantDAO = new ProductVariantDAO();
+    }
 
     @Override
     protected void doGet(

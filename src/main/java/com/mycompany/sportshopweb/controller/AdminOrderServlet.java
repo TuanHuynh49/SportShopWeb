@@ -16,7 +16,13 @@ import java.util.List;
 @WebServlet(name = "AdminOrderServlet", urlPatterns = { "/admin/orders", "/admin/order-detail" })
 public class AdminOrderServlet extends HttpServlet {
 
-    private final AdminOrderDAO adminOrderDAO = new AdminOrderDAO();
+    private AdminOrderDAO adminOrderDAO;
+
+    @Override
+    public void init() throws ServletException {
+        super.init();
+        adminOrderDAO = new AdminOrderDAO();
+    }
 
     // Xử lý GET cho cả trang danh sách và trang chi tiết đơn hàng.
     @Override

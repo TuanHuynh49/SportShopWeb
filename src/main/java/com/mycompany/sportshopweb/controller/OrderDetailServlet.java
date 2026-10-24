@@ -20,11 +20,12 @@ import java.util.List;
 @WebServlet("/order-detail")
 public class OrderDetailServlet extends HttpServlet {
 
-    private OrderDAO orderDAO = new OrderDAO();
-    private PaymentDAO paymentDAO = new PaymentDAO();
+    private OrderDAO orderDAO;
+    private PaymentDAO paymentDAO;
     
     @Override
-    public void init() throws ServletException{
+    public void init() throws ServletException {
+        super.init();
         orderDAO = new OrderDAO();
         paymentDAO = new PaymentDAO();
     }
@@ -122,14 +123,6 @@ public class OrderDetailServlet extends HttpServlet {
     }
 
     private Order findCustomerOrder(int customerId, int orderId) {
-        List<Order> orders = orderDAO.findByCustomerId(customerId);
-
-        for (Order order : orders) {
-            if (order.getOrderId() == orderId) {
-                return order;
-            }
-        }
-
-        return null;
+        return orderDAO.findByIdAndCustomerId(orderId, customerId);
     }
 }

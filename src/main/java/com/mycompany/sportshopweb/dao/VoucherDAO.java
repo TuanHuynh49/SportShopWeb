@@ -44,7 +44,9 @@ public class VoucherDAO {
             trans.commit();
 
         } catch (Exception e) {
+            if (trans.isActive()) {
                 trans.rollback();
+            }
         } finally {
             em.close();
         }
@@ -76,7 +78,9 @@ public class VoucherDAO {
         } finally {
             em.close();
         }
-    }public List<Voucher> findActiveVouchers() {
+    }
+
+    public List<Voucher> findActiveVouchers() {
     EntityManager em = DBUtil.getEmFactory().createEntityManager();
 
     try {

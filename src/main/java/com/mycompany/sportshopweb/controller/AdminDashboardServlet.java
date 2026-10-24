@@ -26,6 +26,14 @@ import java.util.List;
 @WebServlet(name = "AdminDashboardServlet", urlPatterns = { "/admin/dashboard" })
 public class AdminDashboardServlet extends HttpServlet {
 
+    private AdminDashboardDAO dashboardDAO;
+
+    @Override
+    public void init() throws ServletException {
+        super.init();
+        dashboardDAO = new AdminDashboardDAO();
+    }
+
     // Xử lý request GET khi người dùng mở Dashboard.
     @Override
     protected void doGet(
@@ -35,7 +43,6 @@ public class AdminDashboardServlet extends HttpServlet {
 
         try {
             // 1. Thống kê tổng quan từ AdminDashboardDAO
-            AdminDashboardDAO dashboardDAO = new AdminDashboardDAO();
             long todayRevenue = dashboardDAO.getTodayRevenue();
             long monthRevenue = dashboardDAO.getMonthRevenue();
             long newOrderCount = dashboardDAO.getTodayOrderCount();
