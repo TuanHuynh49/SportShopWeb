@@ -17,7 +17,13 @@ import jakarta.servlet.http.HttpSession;
 @WebServlet(name = "ForgotPasswordServlet", urlPatterns = {"/ForgotPasswordServlet", "/forgot-password"})
 public class ForgotPasswordServlet extends HttpServlet {
 
-    private final UserDAO userDAO = new UserDAO();
+    private UserDAO userDAO;
+
+    // Tận dụng vòng đời Servlet: Khởi tạo UserDAO một lần duy nhất khi Servlet được nạp
+    @Override
+    public void init() throws ServletException {
+        userDAO = new UserDAO();
+    }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -71,16 +77,14 @@ public class ForgotPasswordServlet extends HttpServlet {
         }
 
         if (email == null || email.isEmpty()) {
-            request.setAttribute("error", "Vui lòng nhập địa chỉ email.");
-            request.getRequestDispatcher("/views/forgot-password.jsp").forward(request, response);
+            forwardError(request, response, "/views/forgot-password.jsp", "Vui lòng nhập địa chỉ email.");
             return;
         }
 
         User user = userDAO.findByIdentifier(email);
         if (user == null) {
-            request.setAttribute("error", "Email không tồn tại trong hệ thống.");
             request.setAttribute("email", email);
-            request.getRequestDispatcher("/views/forgot-password.jsp").forward(request, response);
+            forwardError(request, response, "/views/forgot-password.jsp", "Email không tồn tại trong hệ thống.");
             return;
         }
 
@@ -106,8 +110,7 @@ public class ForgotPasswordServlet extends HttpServlet {
             throws ServletException, IOException {
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("reset_email") == null) {
-            request.setAttribute("error", "Phiên xác thực đã hết hạn. Vui lòng nhập lại email.");
-            request.getRequestDispatcher("/views/forgot-password.jsp").forward(request, response);
+            forwardError(request, response, "/views/forgot-password.jsp", "Phiên xác thực đã hết hạn. Vui lòng nhập lại email.");
             return;
         }
 
@@ -123,29 +126,26 @@ public class ForgotPasswordServlet extends HttpServlet {
 
         // Kiểm tra thời hạn mã OTP
         if (expiry == null || System.currentTimeMillis() > expiry) {
-            request.setAttribute("error", "Mã OTP đã hết hiệu lực (quá 5 phút). Vui lòng gửi lại mã mới.");
-            request.getRequestDispatcher("/views/reset-password.jsp").forward(request, response);
+            forwardError(request, response, "/views/reset-password.jsp", "Mã OTP đã hết hiệu lực (quá 5 phút). Vui lòng gửi lại mã mới.");
             return;
         }
 
         // Kiểm tra tính chính xác của OTP
         if (inputOtp == null || !inputOtp.trim().equals(sessionOtp)) {
-            request.setAttribute("error", "Mã xác thực OTP không chính xác.");
-            request.getRequestDispatcher("/views/reset-password.jsp").forward(request, response);
+            forwardError(request, response, "/views/reset-password.jsp", "Mã xác thực OTP không chính xác.");
             return;
         }
 
-        // Kiểm tra độ dài mật khẩu mới
-        if (newPassword == null || newPassword.length() < 6) {
-            request.setAttribute("error", "Mật khẩu mới phải có ít nhất 6 ký tự.");
-            request.getRequestDispatcher("/views/reset-password.jsp").forward(request, response);
+        // Kiểm tra độ mạnh mật khẩu mới theo chuẩn Chapter 17
+        String passwordError = PasswordUtil.checkPasswordStrength(newPassword);
+        if (passwordError != null) {
+            forwardError(request, response, "/views/reset-password.jsp", passwordError);
             return;
         }
 
         // Kiểm tra khớp mật khẩu xác nhận
         if (!newPassword.equals(confirmPassword)) {
-            request.setAttribute("error", "Xác nhận mật khẩu mới không khớp.");
-            request.getRequestDispatcher("/views/reset-password.jsp").forward(request, response);
+            forwardError(request, response, "/views/reset-password.jsp", "Xác nhận mật khẩu mới không khớp.");
             return;
         }
 
@@ -157,12 +157,24 @@ public class ForgotPasswordServlet extends HttpServlet {
         }
 
         // Xóa thông tin reset khỏi session để bảo mật
-        session.removeAttribute("reset_email");
-        session.removeAttribute("reset_otp");
-        session.removeAttribute("reset_otp_expiry");
+        clearResetSession(session);
 
         // Ghi nhận thông báo và chuyển hướng sang trang Đăng nhập
         session.setAttribute("message", "Đặt lại mật khẩu thành công! Vui lòng đăng nhập với mật khẩu mới.");
         response.sendRedirect(request.getContextPath() + "/LoginServlet");
+    }
+
+    // Helper chuyển hướng báo lỗi (Áp dụng DRY - Don't Repeat Yourself)
+    private void forwardError(HttpServletRequest request, HttpServletResponse response,
+            String jspPath, String errorMessage) throws ServletException, IOException {
+        request.setAttribute("error", errorMessage);
+        request.getRequestDispatcher(jspPath).forward(request, response);
+    }
+
+    // Dọn dẹp session sau khi hoàn thành đổi mật khẩu
+    private void clearResetSession(HttpSession session) {
+        session.removeAttribute("reset_email");
+        session.removeAttribute("reset_otp");
+        session.removeAttribute("reset_otp_expiry");
     }
 }

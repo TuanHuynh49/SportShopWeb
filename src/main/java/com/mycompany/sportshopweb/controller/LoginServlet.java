@@ -34,15 +34,29 @@ import com.mycompany.sportshopweb.model.CartItem;
 @WebServlet(name = "LoginServlet", urlPatterns = { "/LoginServlet" })
 public class LoginServlet extends HttpServlet {
 
+    private UserDAO userDAO;
+    private AdminDAO adminDAO;
+    private CustomerDAO customerDAO;
+    private CartDAO cartDAO;
+
+    // Tận dụng vòng đời Servlet: Khởi tạo các DAO một lần duy nhất khi Servlet được nạp vào bộ nhớ
+    @Override
+    public void init() throws ServletException {
+        userDAO = new UserDAO();
+        adminDAO = new AdminDAO();
+        customerDAO = new CustomerDAO();
+        cartDAO = new CartDAO();
+    }
+
     // Khi người dùng bấm vào link hoặc truy cập URL trang đăng nhập
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         // Lấy toàn bộ danh sách cookie mà trình duyệt gửi lên
         Cookie[] cookies = request.getCookies();
-        if (cookies != null){
-            for (Cookie c : cookies){
-                if ("remember_identifier".equals(c.getName())){
+        if (cookies != null) {
+            for (Cookie c : cookies) {
+                if ("remember_identifier".equals(c.getName())) {
                     // Đẩy giá trị email/sdt và trạng thái đã tick sang giao diện JSP
                     request.setAttribute("identifier", c.getValue());
                     request.setAttribute("rememberMe", true);
@@ -67,7 +81,6 @@ public class LoginServlet extends HttpServlet {
         // Thiết lập mã hóa tiếng Việt
         request.setCharacterEncoding("UTF-8");
         
-        // Business rule layer
         // Lấy dữ liệu từ form login.jsp
         String identifier = request.getParameter("identifier");
         String password = request.getParameter("password");
@@ -81,93 +94,109 @@ public class LoginServlet extends HttpServlet {
 
         // Kiểm tra không được bỏ trống
         if (identifier == null || identifier.isEmpty() || password == null || password.isEmpty()) {
-            request.setAttribute("error", "Please enter your email/phone and password.");
-            request.getRequestDispatcher("/views/login.jsp").forward(request, response);
+            forwardError(request, response, "Please enter your email/phone and password.");
             return;
         }
 
-        // Data access layer
+        // Kiểm tra khóa tạm thời do nhập sai quá 5 lần (Chống tấn công Brute-force theo Chapter 17)
+        HttpSession session = request.getSession();
+        Long lockTime = (Long) session.getAttribute("login_lock_time");
+        if (lockTime != null) {
+            if (System.currentTimeMillis() < lockTime) {
+                long remainingMins = ((lockTime - System.currentTimeMillis()) / (60 * 1000)) + 1;
+                forwardError(request, response, "Too many failed login attempts. Please try again in " + remainingMins + " minutes.");
+                return;
+            } else {
+                // Hết thời gian khóa, tự động mở khóa
+                session.removeAttribute("login_lock_time");
+                session.removeAttribute("login_failed_attempts");
+            }
+        }
+
         // Tìm tài khoản trong database theo email hoặc số điện thoại
-        UserDAO userDAO = new UserDAO();
         User user = userDAO.findByIdentifier(identifier);
 
-        // Nếu không tìm thấy người dùng
-        if (user == null) {
-            request.setAttribute("error", "Invalid email/phone or password.");
-            request.getRequestDispatcher("/views/login.jsp").forward(request, response);
+        // Kiểm tra mật khẩu băm
+        boolean isPasswordCorrect = (user != null) && PasswordUtil.verifyPassword(password, user.getPasswordHash());
+
+        // Nếu sai tài khoản hoặc sai mật khẩu: Tăng số lần thử sai
+        if (user == null || !isPasswordCorrect) {
+            Integer failedAttempts = (Integer) session.getAttribute("login_failed_attempts");
+            failedAttempts = (failedAttempts == null) ? 1 : failedAttempts + 1;
+            session.setAttribute("login_failed_attempts", failedAttempts);
+
+            if (failedAttempts >= 5) {
+                // Khóa đăng nhập trong 15 phút
+                session.setAttribute("login_lock_time", System.currentTimeMillis() + (15 * 60 * 1000));
+                forwardError(request, response, "You have entered wrong credentials 5 times. Your login is locked for 15 minutes.");
+            } else {
+                forwardError(request, response, "Invalid email/phone or password. (Attempt " + failedAttempts + "/5)");
+            }
             return;
         }
 
         // Kiểm tra tài khoản có bị khóa không
         if (user.getStatus() != null && user.getStatus() != AccountStatus.ACTIVE) {
-            request.setAttribute("error", "Your account has been locked or deactivated. Please contact support.");
-            request.getRequestDispatcher("/views/login.jsp").forward(request, response);
+            forwardError(request, response, "Your account has been locked or deactivated. Please contact support.");
             return;
         }
 
-        // Kiểm tra tính trùng khớp của mật khẩu (lớp tiện ích)
-        boolean isPasswordCorrect = PasswordUtil.verifyPassword(password, user.getPasswordHash());
-        if (!isPasswordCorrect) {
-            request.setAttribute("error", "Invalid email/phone or password.");
-            request.getRequestDispatcher("/views/login.jsp").forward(request, response);
-            return;
-        }
+        // Đăng nhập thành công -> Xóa bộ đếm số lần sai
+        session.removeAttribute("login_failed_attempts");
+        session.removeAttribute("login_lock_time");
         
-        // Lấy giá trị checkbox rememberMe và lưu cookie
-        String rememberMe = request.getParameter("rememberMe");
-        Cookie cookie = new Cookie("remember_identifier", identifier);
-        cookie.setPath(request.getContextPath().isEmpty() ? "/": request.getContextPath());
-        cookie.setHttpOnly(true); //chồn XSS (Cross-Site Scripting) đọc trộm
+        // Xử lý lưu hoặc xóa Cookie Ghi nhớ đăng nhập
+        handleRememberMeCookie(request, response, identifier, request.getParameter("rememberMe"));
         
-        if ("true".equals(rememberMe)){
-            cookie.setMaxAge(7*24*60*60);
-        } else {
-            // Bỏ tick -> Xóa cookie
-            cookie.setMaxAge(0);
-        }
-        response.addCookie(cookie);
-        
-        // Kiểm tra tài khoản có phải Admin không
-        AdminDAO adminDAO = new AdminDAO();
-        Admin admin = adminDAO.findByUserId(user.getUserId());
-
         // Lưu thông tin đăng nhập vào Session
-        HttpSession session = request.getSession();
         session.setAttribute("user", user);
         
-        // Nếu là Admin -> Chuyển đến Admin Dashboard
+        // Phân quyền: Nếu là Admin thì chuyển đến Admin Dashboard
+        Admin admin = adminDAO.findByUserId(user.getUserId());
         if (admin != null) {
             session.setAttribute("admin", admin);
-
-            // chống lỗi F5, + getContextPath tạo đường dẫn động chống lỗi 404
-            response.sendRedirect(
-                    request.getContextPath() + "/admin/dashboard");
+            response.sendRedirect(request.getContextPath() + "/admin/dashboard");
             return;
         }
 
-        // Nếu không phải Admin -> Xử lý như User thông thường
-        CustomerDAO customerDAO = new CustomerDAO();
+        // Nếu là Customer thông thường thì chuyển đến trang chủ HomeServlet
         Customer customer = customerDAO.findByUserId(user.getUserId());
-
         session.setAttribute("customer", customer);
         updateCartCount(session, customer.getCustomerId());
 
-        response.sendRedirect(
-                request.getContextPath() + "/HomeServlet");
-        
-        
+        response.sendRedirect(request.getContextPath() + "/HomeServlet");
     }
+
+    // Helper chuyển hướng báo lỗi (Áp dụng DRY - Don't Repeat Yourself)
+    private void forwardError(HttpServletRequest request, HttpServletResponse response, String errorMessage)
+            throws ServletException, IOException {
+        request.setAttribute("error", errorMessage);
+        request.getRequestDispatcher("/views/login.jsp").forward(request, response);
+    }
+
+    // Tách hàm xử lý lưu/xóa Cookie Ghi nhớ đăng nhập
+    private void handleRememberMeCookie(HttpServletRequest request, HttpServletResponse response,
+            String identifier, String rememberMe) {
+        Cookie cookie = new Cookie("remember_identifier", identifier);
+        cookie.setPath(request.getContextPath().isEmpty() ? "/" : request.getContextPath());
+        cookie.setHttpOnly(true); // Chống XSS (Cross-Site Scripting)
+        cookie.setSecure(request.isSecure()); // Tự động bật bảo vệ SSL/TLS khi chạy trên HTTPS (Chapter 15)
+
+        if ("true".equals(rememberMe)) {
+            cookie.setMaxAge(7 * 24 * 60 * 60); // Lưu 7 ngày
+        } else {
+            cookie.setMaxAge(0); // Xóa cookie nếu bỏ tick
+        }
+        response.addCookie(cookie);
+    }
+
+    // Cập nhật số lượng mặt hàng trong giỏ hàng vào Session
     private void updateCartCount(HttpSession session, int customerId) {
-    CartDAO cartDAO = new CartDAO();
-
-    Cart cart = cartDAO.findByCustomerId(customerId);
-
-    int cartCount = 0;
-
-    if (cart != null && cart.getCartItems() != null) {
-        cartCount = cart.getCartItems().size();
+        Cart cart = cartDAO.findByCustomerId(customerId);
+        int cartCount = 0;
+        if (cart != null && cart.getCartItems() != null) {
+            cartCount = cart.getCartItems().size();
+        }
+        session.setAttribute("cartCount", cartCount);
     }
-
-    session.setAttribute("cartCount", cartCount);
-}
 }

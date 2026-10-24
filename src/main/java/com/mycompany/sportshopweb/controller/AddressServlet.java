@@ -19,8 +19,15 @@ import java.util.List;
 @WebServlet("/addresses")
 public class AddressServlet extends HttpServlet {
 
-    private final AdressDAO adressDAO = new AdressDAO();
-    private final CustomerDAO customerDAO = new CustomerDAO();
+    private AdressDAO adressDAO;
+    private CustomerDAO customerDAO;
+
+    // Tận dụng vòng đời Servlet: Khởi tạo các DAO một lần duy nhất khi Servlet được nạp
+    @Override
+    public void init() throws ServletException {
+        adressDAO = new AdressDAO();
+        customerDAO = new CustomerDAO();
+    }
 
     // Tìm customerId của tài khoản đang đăng nhập
     // Hiển thị danh sách địa chỉ
