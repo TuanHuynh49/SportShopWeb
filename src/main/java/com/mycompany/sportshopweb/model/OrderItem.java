@@ -1,67 +1,78 @@
+
 package com.mycompany.sportshopweb.model;
 
 import jakarta.persistence.Column;
-import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.MapsId;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.io.Serializable;
 
 @Entity
-@Table(name = "OrderItem")
+@Table(
+    name = "OrderItem",
+    uniqueConstraints = {
+        @UniqueConstraint(
+            name = "uk_orderitem_order_variant",
+            columnNames = {"order_id", "variant_id"}
+        )
+    }
+)
 public class OrderItem implements Serializable {
-    
-    @EmbeddedId
-    private OrderItemId orderItemId;
-    
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "order_item_id")
+    private int orderItemId;
+
     @ManyToOne
-    @MapsId("orderId")
-    @JoinColumn(name = "order_id")
+    @JoinColumn(name = "order_id", nullable = false)
     private Order order;
-    
+
     @ManyToOne
-    @MapsId("variantId")
-    @JoinColumn(name = "variant_id")
+    @JoinColumn(name = "variant_id", nullable = false)
     private ProductVariant productVariant;
-    
+
+    @Column(name = "quantity", nullable = false)
     private int quantity;
 
     public OrderItem() {
         this.quantity = 1;
     }
 
-    public OrderItem( ProductVariant productVariant, int quantity) {
-        
-        this.productVariant= productVariant;
+    public OrderItem(ProductVariant productVariant, int quantity) {
+        this.productVariant = productVariant;
         this.quantity = quantity;
     }
-    
-    public OrderItemId getOrderItemId(){
+
+    public int getOrderItemId() {
         return orderItemId;
     }
-    
-    public void setOrderItemId(OrderItemId orderItemId){
+
+    public void setOrderItemId(int orderItemId) {
         this.orderItemId = orderItemId;
     }
-    
-    public Order getOrder(){
+
+    public Order getOrder() {
         return order;
     }
-    public void setOrder(Order order){
+
+    public void setOrder(Order order) {
         this.order = order;
     }
-    // Getter & Setter cho item
+
     public ProductVariant getProductVariant() {
         return productVariant;
     }
 
     public void setProductVariant(ProductVariant productVariant) {
-        this.productVariant= productVariant;
+        this.productVariant = productVariant;
     }
 
-    // Getter & Setter cho quantity
     public int getQuantity() {
         return quantity;
     }
