@@ -19,15 +19,20 @@ import com.mycompany.sportshopweb.util.ParseUtils;
 
 @WebServlet(name = "HomeServlet", urlPatterns = {"/HomeServlet", "/home"})
 public class HomeServlet extends HttpServlet {
-
+    
+    private ProductDAO productDAO;
+    private AlbumDAO albumDAO;
+    private BrandDAO brandDAO;
+    private Set<String> SORTS;
 
     @Override
-    public void init() {
-        getServletContext().setAttribute("ProductDAO", new ProductDAO());
-        getServletContext().setAttribute("AlbumDAO", new AlbumDAO());
-        getServletContext().setAttribute("BrandDAO", new BrandDAO());
-        Set<String> SORTS =Set.of("id_asc", "id_desc", "price_asc", "price_desc", "name_asc");
-        getServletContext().setAttribute("SORTS",SORTS);
+    public void init() throws ServletException {
+        super.init();
+        
+        this.productDAO = new ProductDAO();
+        this.albumDAO = new AlbumDAO();
+        this.brandDAO = new BrandDAO();
+        this.SORTS = Set.of("id_asc", "id_desc", "price_asc", "price_desc", "name_asc");
     }
 
     @Override
@@ -35,9 +40,10 @@ public class HomeServlet extends HttpServlet {
             throws ServletException, IOException {
         
         List<Category> allCategories = CategoryDB.getAllCategory();
-        request.setAttribute("brandList", BrandDAO.getAllBrand());
+        
+        // SỬ DỤNG BIẾN TOÀN CỤC brandDAO thay vì gọi static BrandDAO.getAllBrand()
+        request.setAttribute("brandList", brandDAO.getAllBrand());
         request.setAttribute("categoryList", allCategories); 
-        Set<String> SORTS =(Set<String>)getServletContext().getAttribute("SORTS");
 
         int catPage = ParseUtils.parseIntOrDefault(request.getParameter("catPage"), 1);
         int catPageSize = 6;
@@ -58,7 +64,7 @@ public class HomeServlet extends HttpServlet {
         request.setAttribute("totalCatPages", totalCatPages);
         
         try {
-            List<Album> albumList = AlbumDAO.getAllAlbums();
+            List<Album> albumList = albumDAO.getAllAlbums();
             
             request.setAttribute("albumList", albumList);
             getServletContext().setAttribute("globalAlbumList", albumList);
@@ -68,7 +74,7 @@ public class HomeServlet extends HttpServlet {
 
         int brandId = ParseUtils.parseIntOrDefault(request.getParameter("brand"), 0);
         int catId = ParseUtils.parseIntOrDefault(request.getParameter("cat"), 0);
-        String keyword=request.getParameter("keyword");
+        String keyword = request.getParameter("keyword");
         String minPriceStr = request.getParameter("minPrice");
         String maxPriceStr = request.getParameter("maxPrice");
 
@@ -85,17 +91,17 @@ public class HomeServlet extends HttpServlet {
         int p = ParseUtils.parseIntOrDefault(request.getParameter("page"), 0);
         if (p != 0) page = p;
 
-        long total = ProductDAO.countFiltered(brandId, catId, minPrice, maxPrice,keyword);
+        long total = productDAO.countFiltered(brandId, catId, minPrice, maxPrice, keyword);
         int totalPages = (int) Math.ceil((double) total / ProductDAO.PAGE_SIZE);
         if (totalPages == 0) totalPages = 1;
         if (page < 1) page = 1;
         if (page > totalPages) page = totalPages;
 
-        request.setAttribute("productList", ProductDAO.getFiltered(brandId, catId, minPrice, maxPrice, sort, page, ProductDAO.PAGE_SIZE,keyword));
+        request.setAttribute("productList", productDAO.getFiltered(brandId, catId, minPrice, maxPrice, sort, page, ProductDAO.PAGE_SIZE, keyword));
         request.setAttribute("totalProducts", total);
         request.setAttribute("currentPage", page);
         request.setAttribute("totalPages", totalPages);
-        request.setAttribute("keyword",keyword);
+        request.setAttribute("keyword", keyword);
 
         request.setAttribute("selectedBrand", brandId);
         request.setAttribute("selectedCat", catId);

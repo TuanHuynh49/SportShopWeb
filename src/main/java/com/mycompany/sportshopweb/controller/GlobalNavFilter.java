@@ -14,12 +14,6 @@ import jakarta.servlet.http.HttpServletRequest;
 
 import java.io.IOException;
 
-/**
- * Filter dùng chung cho toàn bộ website theo chuẩn mô hình MVC.
- * Tự động nạp dữ liệu Danh mục (Categories), Thương hiệu (Brands) và Bộ sưu tập (Albums)
- * vào applicationScope nếu chưa có, giúp các thành phần dùng chung như header/side-panel
- * luôn hiển thị đầy đủ trên mọi trang (Trang chủ, Hồ sơ, Sổ địa chỉ, Đơn hàng,...)
- */
 @WebFilter(filterName = "GlobalNavFilter", urlPatterns = { "/*" })
 public class GlobalNavFilter implements Filter {
 
