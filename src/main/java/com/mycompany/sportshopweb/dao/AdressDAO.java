@@ -80,7 +80,7 @@ public class AdressDAO {
     // Thêm địa chỉ mới
     public boolean insert(Adress address) {
         EntityManager em = DBUtil.getEmFactory().createEntityManager();
-        EntityTransaction trans = em.getTransaction();
+EntityTransaction trans = em.getTransaction();
 
         try {
             trans.begin();
@@ -168,8 +168,7 @@ public class AdressDAO {
             em.close();
         }
     }
-
-    // Đặt một địa chỉ làm mặc định
+// Đặt một địa chỉ làm mặc định
     public boolean setDefault(int addressId, int customerId) {
         EntityManager em = DBUtil.getEmFactory().createEntityManager();
         EntityTransaction trans = em.getTransaction();

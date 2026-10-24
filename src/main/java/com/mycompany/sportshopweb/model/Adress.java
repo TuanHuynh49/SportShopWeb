@@ -32,6 +32,17 @@ public class Adress implements Serializable {
 
     @Column(name = "is_default")
     private boolean isDefault;
+    
+    @Column(name = "is_deleted", nullable = false)
+    private boolean deleted = false;
+
+    public boolean isDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
+    }
 
     @Column(name = "deleted")
     private boolean deleted;
@@ -46,22 +57,26 @@ public class Adress implements Serializable {
         this.deleted = false;
     }
 
-    public Adress(int addressId, String province, String ward, String detailAddress, boolean isDefault) {
-        this.addressId = addressId;
-        this.customer = new Customer();
-        this.province = province;
-        this.ward = ward;
-        this.detailAddress = detailAddress;
-        this.isDefault = isDefault;
+    public Adress(int addressId, String province, String ward,
+              String detailAddress, boolean isDefault) {
+    this.addressId = addressId;
+    this.customer = new Customer();
+    this.province = province;
+    this.ward = ward;
+    this.detailAddress = detailAddress;
+    this.isDefault = isDefault;
+    this.deleted = false;
     }
 
-    public Adress(int addressId, Customer customer, String province, String ward, String detailAddress, boolean isDefault) {
+    public Adress(int addressId, Customer customer, String province,
+                  String ward, String detailAddress, boolean isDefault) {
         this.addressId = addressId;
         this.customer = customer;
         this.province = province;
         this.ward = ward;
         this.detailAddress = detailAddress;
         this.isDefault = isDefault;
+        this.deleted = false;
     }
 
     public int getAddressId() {

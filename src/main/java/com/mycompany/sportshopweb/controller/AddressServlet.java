@@ -79,17 +79,21 @@ public class AddressServlet extends HttpServlet {
 
         boolean success = false;
 
+        
         if ("insert".equals(action)) {
             success = insertAddress(request, customerId);
         } else if ("update".equals(action)) {
             success = updateAddress(request, customerId);
         } else if ("setDefault".equals(action)) {
             success = setDefaultAddress(request, customerId);
+        } else if ("delete".equals(action)) {
+            success = deleteAddress(request, customerId);
         } else {
             response.sendError(
                     HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
+
 
         if (success) {
             response.sendRedirect(
@@ -178,4 +182,39 @@ public class AddressServlet extends HttpServlet {
     private boolean isBlank(String value) {
         return value == null || value.trim().isEmpty();
     }
+    
+    // Xóa mềm địa chỉ
+    
+    // Xóa mềm địa chỉ
+    private boolean deleteAddress(
+            HttpServletRequest request,
+            int customerId) {
+
+        String addressIdParam = request.getParameter("addressId");
+
+        if (addressIdParam == null || addressIdParam.trim().isEmpty()) {
+            System.out.println("Lỗi xóa địa chỉ: thiếu addressId.");
+            return false;
+        }
+
+        int addressId;
+
+        try {
+            addressId = Integer.parseInt(addressIdParam);
+        } catch (NumberFormatException e) {
+            System.out.println("Lỗi xóa địa chỉ: addressId không hợp lệ.");
+            return false;
+        }
+
+        System.out.println("Đang xóa mềm addressId = " + addressId
+                + ", customerId = " + customerId);
+
+        boolean success = adressDAO.softDelete(addressId, customerId);
+
+        System.out.println("Kết quả xóa mềm: " + success);
+
+        return success;
+    }
+
+
 }

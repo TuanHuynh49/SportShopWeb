@@ -1,3 +1,4 @@
+
 package com.mycompany.sportshopweb.controller;
 
 import com.mycompany.sportshopweb.model.Customer;
@@ -19,24 +20,34 @@ import java.util.Map;
 @WebServlet("/vnpay-return")
 public class VNPayReturnServlet extends HttpServlet {
 
-    private final PaymentService paymentService = new PaymentService();
+    private static final String FAIL_PAGE = "/views/VNPayFail.jsp";
+    private static final String SUCCESS_PAGE = "/views/VNPaySuccess.jsp";
+    private static final String SESSION_CUSTOMER = "customer";
 
+    private PaymentService paymentService;
+
+    // =========================================================
+    // INIT
+    // =========================================================
+    @Override
+    public void init() throws ServletException {
+        paymentService = new PaymentService();
+    }
+
+    // =========================================================
+    // GET: NHẬN KẾT QUẢ TRẢ VỀ TỪ VNPAY
+    // =========================================================
     @Override
     protected void doGet(
             HttpServletRequest request,
-            HttpServletResponse response) throws ServletException, IOException {
+            HttpServletResponse response)
+            throws ServletException, IOException {
 
         String contextPath = request.getContextPath();
 
         try {
-            // 1. Lấy toàn bộ tham số VNPay gửi về
-            Map<String, String> params = new HashMap<>();
-
-            request.getParameterMap().forEach((key, values) -> {
-                if (values != null && values.length > 0) {
-                    params.put(key, values[0]);
-                }
-            });
+            // 1. Lấy tham số VNPay.
+            Map<String, String> params = getRequestParameters(request);
 
             String txnRef = params.get("vnp_TxnRef");
             String responseCode = params.get("vnp_ResponseCode");
@@ -44,36 +55,36 @@ public class VNPayReturnServlet extends HttpServlet {
             String transactionNo = params.get("vnp_TransactionNo");
             String amountText = params.get("vnp_Amount");
 
-            // 2. Kiểm tra chữ ký bảo mật
+            // 2. Xác minh chữ ký trước khi tin tưởng dữ liệu.
             if (!VNPayService.isValidSignature(params)) {
-                response.sendRedirect(
-                        contextPath + "/views/VNPayFail.jsp?reason=invalid_signature");
+                redirectToFail(response, contextPath, "invalid_signature");
                 return;
             }
 
-            // 3. Kiểm tra kết quả phản hồi từ VNPay
-            boolean paymentSuccess = "00".equals(responseCode)
-                    && "00".equals(transactionStatus);
+            // 3. Kiểm tra dữ liệu bắt buộc.
+            if (isBlank(txnRef)
+                    || isBlank(transactionNo)
+                    || isBlank(amountText)
+                    || isBlank(responseCode)
+                    || isBlank(transactionStatus)) {
 
-            if (!paymentSuccess) {
-                response.sendRedirect(
-                        contextPath + "/views/VNPayFail.jsp?reason=payment_failed");
+                redirectToFail(response, contextPath, "missing_data");
                 return;
             }
 
-            if (txnRef == null || txnRef.isBlank()
-                    || transactionNo == null || transactionNo.isBlank()
-                    || amountText == null) {
-                response.sendRedirect(
-                        contextPath + "/views/VNPayFail.jsp?reason=missing_data");
+            // 4. Chỉ xử lý khi VNPay báo thanh toán thành công.
+            if (!"00".equals(responseCode)
+                    || !"00".equals(transactionStatus)) {
+
+                redirectToFail(response, contextPath, "payment_failed");
                 return;
             }
 
-            // 4. Lấy orderId đã lưu khi tạo yêu cầu thanh toán
+            // 5. Lấy mapping orderId từ session.
             HttpSession session = request.getSession(false);
+
             if (session == null) {
-                response.sendRedirect(
-                        contextPath + "/views/VNPayFail.jsp?reason=session_expired");
+                redirectToFail(response, contextPath, "session_expired");
                 return;
             }
 
@@ -81,15 +92,15 @@ public class VNPayReturnServlet extends HttpServlet {
             Object savedOrderId = session.getAttribute(sessionKey);
 
             if (!(savedOrderId instanceof Integer)) {
-                response.sendRedirect(
-                        contextPath + "/views/VNPayFail.jsp?reason=order_not_found");
+                redirectToFail(response, contextPath, "order_not_found");
                 return;
             }
 
             int orderId = (Integer) savedOrderId;
 
-            // 5. Kiểm tra tài khoản khách hàng đăng nhập
-            Object customerObject = session.getAttribute("customer");
+            // 6. Kiểm tra khách hàng đăng nhập.
+            Object customerObject = session.getAttribute(SESSION_CUSTOMER);
+
             if (!(customerObject instanceof Customer)) {
                 response.sendRedirect(contextPath + "/LoginServlet");
                 return;
@@ -97,8 +108,7 @@ public class VNPayReturnServlet extends HttpServlet {
 
             Customer customer = (Customer) customerObject;
 
-            // 6. Xử lý nghiệp vụ thanh toán, trừ tồn kho và cập nhật COMPLETED qua
-            // PaymentService
+            // 7. Xác minh và xử lý thanh toán trong service.
             String result = paymentService.processPaymentSuccess(
                     orderId,
                     customer,
@@ -107,22 +117,57 @@ public class VNPayReturnServlet extends HttpServlet {
                     PaymentMethod.VNPAY);
 
             if (!"SUCCESS".equals(result)) {
-                response.sendRedirect(
-                        contextPath + "/views/VNPayFail.jsp?reason=" + result);
+                redirectToFail(response, contextPath, result);
                 return;
             }
 
-            // 7. Xóa mapping session sau khi xử lý thành công
+            // 8. Chỉ xóa mapping sau khi service xử lý thành công.
             session.removeAttribute(sessionKey);
 
-            // 8. Chuyển hướng tới trang thông báo thành công
-            response.sendRedirect(
-                    contextPath + "/views/VNPaySuccess.jsp");
+            // 9. Chuyển tới trang thành công.
+            response.sendRedirect(contextPath + SUCCESS_PAGE);
 
         } catch (Exception e) {
             log("Error processing VNPay return.", e);
-            throw new ServletException(
-                    "Unable to process VNPay response.", e);
+
+            // Không để thông báo exception nội bộ lộ ra giao diện.
+            redirectToFail(response, contextPath, "processing_error");
         }
+    }
+
+    // =========================================================
+    // HELPER: LẤY THAM SỐ REQUEST
+    // =========================================================
+    private Map<String, String> getRequestParameters(
+            HttpServletRequest request) {
+
+        Map<String, String> params = new HashMap<>();
+
+        request.getParameterMap().forEach((key, values) -> {
+            if (values != null && values.length > 0) {
+                params.put(key, values[0]);
+            }
+        });
+
+        return params;
+    }
+
+    // =========================================================
+    // HELPER: KIỂM TRA CHUỖI RỖNG
+    // =========================================================
+    private boolean isBlank(String value) {
+        return value == null || value.isBlank();
+    }
+
+    // =========================================================
+    // HELPER: CHUYỂN TỚI TRANG THẤT BẠI
+    // =========================================================
+    private void redirectToFail(
+            HttpServletResponse response,
+            String contextPath,
+            String reason) throws IOException {
+
+        response.sendRedirect(
+                contextPath + FAIL_PAGE + "?reason=" + reason);
     }
 }

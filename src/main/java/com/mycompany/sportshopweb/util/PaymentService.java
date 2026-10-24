@@ -1,3 +1,4 @@
+
 package com.mycompany.sportshopweb.util;
 
 import com.mycompany.sportshopweb.dao.OrderDAO;
@@ -10,24 +11,31 @@ import com.mycompany.sportshopweb.model.OrderStatus;
 import com.mycompany.sportshopweb.model.Payment;
 import com.mycompany.sportshopweb.model.PaymentMethod;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityTransaction;
+import jakarta.persistence.LockModeType;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
-/**
- * Service xử lý nghiệp vụ liên quan đến Payment và điều phối tồn kho khi thanh toán.
- */
 public class PaymentService {
 
     private final PaymentDAO paymentDAO;
     private final OrderDAO orderDAO;
     private final ProductVariantDAO productVariantDAO;
 
+    // =========================================================
+    // INIT
+    // =========================================================
     public PaymentService() {
         this.paymentDAO = new PaymentDAO();
         this.orderDAO = new OrderDAO();
         this.productVariantDAO = new ProductVariantDAO();
     }
 
+    // =========================================================
+    // PAYMENT CRUD
+    // =========================================================
     public Payment findById(int paymentId) {
         return paymentDAO.findById(paymentId);
     }
@@ -42,84 +50,75 @@ public class PaymentService {
 
     public void insertPayment(Payment payment) {
         if (payment == null) {
-            throw new IllegalArgumentException("Payment must not be null.");
+            throw new IllegalArgumentException(
+                    "Payment must not be null.");
         }
+
         paymentDAO.insertPayment(payment);
     }
 
     public void updatePayment(Payment payment) {
         if (payment == null) {
-            throw new IllegalArgumentException("Payment must not be null.");
+            throw new IllegalArgumentException(
+                    "Payment must not be null.");
         }
+
         paymentDAO.updatePayment(payment);
     }
 
-    /**
-     * Kiểm tra và lấy đơn hàng hợp lệ để thanh toán:
-     * - Đơn hàng phải tồn tại và thuộc sở hữu của khách hàng.
-     * - Trạng thái đơn hàng phải là CONFIRMED và số tiền > 0.
-     * - Thực hiện khóa giữ chỗ (Soft Lock) số lượng tồn kho cho các sản phẩm trong đơn.
-     *
-     * @param orderId ID đơn hàng
-     * @param customer Khách hàng đang đăng nhập
-     * @return Order nếu hợp lệ và giữ chỗ thành công, ngược lại trả về null
-     */
-    public Order getOrderForPayment(int orderId, Customer customer) {
+    // =========================================================
+    // GET ORDER BEFORE REDIRECTING TO VNPAY
+    // =========================================================
+    public Order getOrderForPayment(
+            int orderId,
+            Customer customer) {
+
         if (orderId <= 0 || customer == null) {
             return null;
         }
 
-        List<Order> orders = orderDAO.findByCustomerId(customer.getCustomerId());
-        if (orders == null || orders.isEmpty()) {
+        List<Order> orders = orderDAO.findByCustomerId(
+                customer.getCustomerId());
+
+        if (orders == null) {
             return null;
         }
 
-        Order selectedOrder = null;
-        for (Order o : orders) {
-            if (o.getOrderId() == orderId) {
-                selectedOrder = o;
-                break;
+        for (Order order : orders) {
+            if (order == null) {
+                continue;
+            }
+
+            boolean sameOrder =
+                    order.getOrderId() == orderId;
+
+            boolean sameCustomer =
+                    order.getCustomer() != null
+                    && order.getCustomer().getCustomerId()
+                    == customer.getCustomerId();
+
+            boolean waitingForPayment =
+                    order.getOrderStatus()
+                    == OrderStatus.CONFIRMED;
+
+            boolean validAmount =
+                    order.getTotalAmount() > 0;
+
+            if (sameOrder
+                    && sameCustomer
+                    && waitingForPayment
+                    && validAmount) {
+
+                return order;
             }
         }
 
-        if (selectedOrder == null) {
-            return null;
-        }
-
-        // Chỉ cho phép thanh toán đơn hàng có trạng thái CONFIRMED và số tiền hợp lệ
-        if (selectedOrder.getOrderStatus() != OrderStatus.CONFIRMED
-                || selectedOrder.getTotalAmount() <= 0) {
-            return null;
-        }
-
-        // Khóa giữ chỗ (Soft Lock) cho từng mặt hàng trong đơn
-        if (selectedOrder.getOrderItems() != null) {
-            for (OrderItem item : selectedOrder.getOrderItems()) {
-                if (item.getProductVariant() != null) {
-                    int variantId = item.getProductVariant().getVariantId();
-                    int quantity = item.getQuantity();
-                    productVariantDAO.reserveStock(variantId, quantity);
-                }
-            }
-        }
-
-        return selectedOrder;
+        return null;
     }
 
-    /**
-     * Xử lý xác nhận thanh toán thành công (khi nhận callback từ cổng thanh toán):
-     * 1. Đối chiếu số tiền thanh toán (Anti-tampering Check).
-     * 2. Ghi nhận bản ghi Payment (chống trùng lặp Idempotency).
-     * 3. Trừ số lượng tồn kho thực tế và xóa giữ chỗ (Phương án A).
-     * 4. Cập nhật trạng thái đơn hàng sang COMPLETED.
-     *
-     * @param orderId ID đơn hàng
-     * @param customer Khách hàng đăng nhập
-     * @param amountText Số tiền do cổng thanh toán gửi về (đơn vị xu = VND * 100)
-     * @param transactionNo Mã giao dịch do cổng thanh toán cấp
-     * @param method Phương thức thanh toán (VNPAY, MOMO,...)
-     * @return "SUCCESS" nếu thành công, hoặc mã lỗi (amount_mismatch, order_not_found, missing_data,...)
-     */
+    // =========================================================
+    // PROCESS VNPAY PAYMENT SUCCESS
+    // =========================================================
     public String processPaymentSuccess(
             int orderId,
             Customer customer,
@@ -127,67 +126,191 @@ public class PaymentService {
             String transactionNo,
             PaymentMethod method) {
 
-        if (orderId <= 0 || customer == null || amountText == null || transactionNo == null) {
+        // 1. Validate input.
+        if (orderId <= 0
+                || customer == null
+                || amountText == null
+                || amountText.isBlank()
+                || transactionNo == null
+                || transactionNo.isBlank()
+                || method != PaymentMethod.VNPAY) {
+
             return "missing_data";
         }
 
-        List<Order> orders = orderDAO.findByCustomerId(customer.getCustomerId());
-        Order selectedOrder = null;
-        if (orders != null) {
-            for (Order o : orders) {
-                if (o.getOrderId() == orderId) {
-                    selectedOrder = o;
-                    break;
-                }
-            }
-        }
+        // 2. Parse the amount returned by VNPay.
+        // VNPay vnp_Amount = order amount * 100.
+        final long returnedAmount;
 
-        if (selectedOrder == null) {
-            return "order_not_found";
-        }
-
-        // 1. Đối chiếu số tiền (VND * 100)
-        long expectedAmount = Math.multiplyExact(selectedOrder.getTotalAmount(), 100L);
-        long returnedAmount;
         try {
             returnedAmount = Long.parseLong(amountText);
         } catch (NumberFormatException e) {
             return "invalid_amount";
         }
 
-        if (returnedAmount != expectedAmount) {
-            return "amount_mismatch";
+        if (returnedAmount <= 0) {
+            return "invalid_amount";
         }
 
-        // 2. Tạo bản ghi Payment nếu chưa có (Idempotency)
-        List<Payment> existingPayments = paymentDAO.findByOrderId(orderId);
-        if (existingPayments == null || existingPayments.isEmpty()) {
-            Payment payment = new Payment();
-            payment.setOrderId(orderId);
-            payment.setPaymentMethod(method != null ? method : PaymentMethod.VNPAY);
-            payment.setAmount(selectedOrder.getTotalAmount());
-            payment.setTransactionCode(transactionNo);
-            payment.setPaymentTime(LocalDateTime.now());
-            paymentDAO.insertPayment(payment);
-        }
+        EntityManager em =
+                DBUtil.getEmFactory().createEntityManager();
 
-        // 3. Trừ kho thực tế và xóa giữ chỗ cho từng sản phẩm trong đơn hàng
-        if (selectedOrder.getOrderItems() != null) {
-            for (OrderItem item : selectedOrder.getOrderItems()) {
-                if (item.getProductVariant() != null) {
-                    int variantId = item.getProductVariant().getVariantId();
-                    int quantity = item.getQuantity();
-                    productVariantDAO.deductReservedStock(variantId, quantity);
+        EntityTransaction trans = em.getTransaction();
+
+        try {
+            trans.begin();
+
+            // 3. Lock the order to prevent concurrent processing.
+            Order order = orderDAO.findByIdForUpdate(
+                    em, orderId);
+
+            if (order == null) {
+                rollback(trans);
+                return "order_not_found";
+            }
+
+            // 4. Verify order ownership.
+            if (order.getCustomer() == null
+                    || order.getCustomer().getCustomerId()
+                    != customer.getCustomerId()) {
+
+                rollback(trans);
+                return "order_not_found";
+            }
+
+            // 5. Verify the amount.
+            final long expectedAmount;
+
+            try {
+                expectedAmount = Math.multiplyExact(
+                        order.getTotalAmount(), 100L);
+            } catch (ArithmeticException e) {
+                rollback(trans);
+                return "invalid_amount";
+            }
+
+            if (returnedAmount != expectedAmount) {
+                rollback(trans);
+                return "amount_mismatch";
+            }
+
+            // 6. Check whether this transaction has already
+            // been recorded for this order.
+            List<Payment> existingPayments =
+                    paymentDAO.findByOrderId(em, orderId);
+
+            if (existingPayments != null) {
+                for (Payment existing : existingPayments) {
+                    if (existing == null) {
+                        continue;
+                    }
+
+                    if (transactionNo.equals(
+                            existing.getTransactionCode())) {
+
+                        boolean sameSuccessfulPayment =
+                                existing.getPaymentMethod()
+                                        == PaymentMethod.VNPAY
+                                && existing.getAmount()
+                                        == order.getTotalAmount()
+                                && order.getOrderStatus()
+                                        == OrderStatus.COMPLETED;
+
+                        if (sameSuccessfulPayment) {
+                            trans.commit();
+                            return "SUCCESS";
+                        }
+
+                        rollback(trans);
+                        return "payment_state_conflict";
+                    }
                 }
             }
-        }
 
-        // 4. Cập nhật trạng thái đơn hàng sang COMPLETED
-        boolean updated = orderDAO.updateOrderStatus(orderId, OrderStatus.COMPLETED);
-        if (!updated) {
-            return "update_status_failed";
-        }
+            // 7. Only a pending order may be paid.
+            if (order.getOrderStatus()
+                    != OrderStatus.CONFIRMED) {
 
-        return "SUCCESS";
+                rollback(trans);
+                return "order_not_payable";
+            }
+
+            // 8. Load and validate order items.
+            List<OrderItem> items = order.getOrderItems();
+
+            if (items == null || items.isEmpty()) {
+                rollback(trans);
+                return "order_items_empty";
+            }
+
+            // 9. Deduct stock inside the same transaction.
+            // If any item cannot be deducted, roll back everything.
+            for (OrderItem item : items) {
+                if (item == null
+                        || item.getProductVariant() == null
+                        || item.getQuantity() <= 0) {
+
+                    throw new IllegalStateException(
+                            "Invalid order item.");
+                }
+
+                int variantId = item.getProductVariant()
+                        .getVariantId();
+
+                boolean deducted =
+                        productVariantDAO.deductStock(
+                                em,
+                                variantId,
+                                item.getQuantity());
+
+                if (!deducted) {
+                    rollback(trans);
+                    return "insufficient_stock";
+                }
+            }
+
+            // 10. Create the payment record.
+            Payment payment = new Payment();
+            payment.setOrderId(orderId);
+            payment.setPaymentMethod(PaymentMethod.VNPAY);
+            payment.setAmount(order.getTotalAmount());
+            payment.setTransactionCode(transactionNo);
+            payment.setPaymentTime(LocalDateTime.now());
+
+            paymentDAO.insertPayment(em, payment);
+
+            // 11. Update order status in the same transaction.
+            boolean updated = orderDAO.updateOrderStatus(
+                    em,
+                    orderId,
+                    OrderStatus.COMPLETED);
+
+            if (!updated) {
+                rollback(trans);
+                return "update_status_failed";
+            }
+
+            // 12. Commit payment, stock and order status together.
+            trans.commit();
+
+            return "SUCCESS";
+
+        } catch (RuntimeException e) {
+            rollback(trans);
+
+            throw e;
+
+        } finally {
+            em.close();
+        }
+    }
+
+    // =========================================================
+    // HELPER: SAFE ROLLBACK
+    // =========================================================
+    private void rollback(EntityTransaction trans) {
+        if (trans != null && trans.isActive()) {
+            trans.rollback();
+        }
     }
 }
