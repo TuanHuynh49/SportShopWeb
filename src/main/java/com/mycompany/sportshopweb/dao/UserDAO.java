@@ -63,6 +63,7 @@ public class UserDAO {
         String jpql = "SELECT u FROM User u WHERE u.email = :identifier OR u.phone = :identifier";
         try {
             TypedQuery<User> query = em.createQuery(jpql, User.class);
+            // Gán giá trị vào Named Parameter để chống tấn công SQL Injection
             query.setParameter("identifier", identifier);
             return query.getSingleResult();
         } catch (NoResultException e) {

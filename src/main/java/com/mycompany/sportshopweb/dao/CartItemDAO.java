@@ -1,12 +1,8 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
+
 package com.mycompany.sportshopweb.dao;
 
 import com.mycompany.sportshopweb.model.Cart;
 import com.mycompany.sportshopweb.model.CartItem;
-import com.mycompany.sportshopweb.model.CartItemId;
 import com.mycompany.sportshopweb.model.ProductVariant;
 import com.mycompany.sportshopweb.util.DBUtil;
 import jakarta.persistence.EntityManager;
@@ -15,111 +11,144 @@ import jakarta.persistence.TypedQuery;
 import java.util.List;
 
 public class CartItemDAO {
-    public void insertCartItem(int customerId, int variantId, int quantity){
+
+    public void insertCartItem(int customerId, int variantId, int quantity) {
         EntityManager em = DBUtil.getEmFactory().createEntityManager();
         EntityTransaction trans = em.getTransaction();
-        try {
-        trans.begin();
-        
-        Cart cart = em.find(Cart.class, customerId);
-        ProductVariant variant = em.find(ProductVariant.class, variantId);
-        if (cart == null) {
-            throw new IllegalArgumentException(
-                "Không tìm thấy giỏ hàng của khách hàng ID: " + customerId
-            );
-        }
-        if (variant == null) {
-            throw new IllegalArgumentException(
-                "Không tìm thấy phiên bản sản phẩm ID: " + variantId
-            );
-        }
-        CartItemId id = new CartItemId(customerId, variantId);
-        CartItem cartItem = em.find(CartItem.class, id);
-        if(cartItem != null) {
-            cartItem.setQuantity(quantity + cartItem.getQuantity());
-        }else {  
-        
-        cartItem = new CartItem(id,variant,quantity);
-        cartItem.setCart(cart);
-        em.persist(cartItem);
-        }
-        trans.commit();
-        }
-        catch (Exception e){
-            if (trans.isActive()) {
-                trans.rollback();
-            }
 
-            // In lỗi thật ra Output của NetBeans
-            e.printStackTrace();
-
-            // Báo lỗi cho Servlet, không âm thầm bỏ qua
-            throw new RuntimeException(
-                    "Không thể thêm sản phẩm vào giỏ hàng.", e
-            );
-        }
-        finally{
-            em.close();
-        }
-        }
-    public void updateCartItem(int customerId, int variantId, int quantity){
-        EntityManager em = DBUtil.getEmFactory().createEntityManager();
-        EntityTransaction trans = em.getTransaction();
-        try {
-        trans.begin();
-        CartItemId id = new CartItemId(customerId, variantId);
-        CartItem cartItem = em.find(CartItem.class, id);
-        if (cartItem == null) {
-            throw new IllegalArgumentException(
-                "Không tìm thấy sản phẩm trong giỏ hàng"
-            );
-        }
-        cartItem.setQuantity(quantity);
-        trans.commit();
-        }
-        catch (Exception e){
-            if (trans.isActive()) {
-            trans.rollback();
-        }
-
-        // Không nuốt lỗi nữa: báo lỗi cho Servlet.
-        throw e;
-        }
-        finally{
-            em.close();
-        }
-    }
-    public void deleteCartItem(int customerId, int variantId){
-        EntityManager em = DBUtil.getEmFactory().createEntityManager();
-        EntityTransaction trans = em.getTransaction();
         try {
             trans.begin();
-            CartItemId id = new CartItemId(customerId, variantId);
-            CartItem cartItem = em.find(CartItem.class, id);
-            if (cartItem == null) {
+
+            Cart cart = em.find(Cart.class, customerId);
+            ProductVariant variant = em.find(ProductVariant.class, variantId);
+
+            if (cart == null || variant == null) {
                 throw new IllegalArgumentException(
-                    "Không tìm thấy sản phẩm trong giỏ hàng"
+                    "Không tìm thấy giỏ hàng hoặc sản phẩm."
                 );
             }
-            em.remove(cartItem);
+
+            TypedQuery<CartItem> query = em.createQuery(
+                "SELECT ci FROM CartItem ci "
+                + "WHERE ci.cart.customerId = :customerId "
+                + "AND ci.productVariant.variantId = :variantId",
+                CartItem.class
+            );
+
+            query.setParameter("customerId", customerId);
+            query.setParameter("variantId", variantId);
+
+            List<CartItem> items = query.getResultList();
+
+            if (!items.isEmpty()) {
+                CartItem cartItem = items.get(0);
+                cartItem.setQuantity(cartItem.getQuantity() + quantity);
+            } else {
+                CartItem cartItem = new CartItem();
+                cartItem.setCart(cart);
+                cartItem.setProductVariant(variant);
+                cartItem.setQuantity(quantity);
+
+                em.persist(cartItem);
+            }
+
             trans.commit();
-        }
-        catch (Exception e){
+
+        } catch (Exception e) {
             if (trans.isActive()) {
                 trans.rollback();
             }
 
-            // In lỗi thật ra Output của NetBeans
-            e.printStackTrace();
-
-            // Báo lỗi cho Servlet, không âm thầm bỏ qua
             throw new RuntimeException(
-                    "Không thể thêm sản phẩm vào giỏ hàng.", e
+                "Không thể thêm sản phẩm vào giỏ hàng.", e
             );
-        }
-        finally{
+
+        } finally {
             em.close();
         }
     }
+
+    public void updateCartItem(int customerId, int variantId, int quantity) {
+        EntityManager em = DBUtil.getEmFactory().createEntityManager();
+        EntityTransaction trans = em.getTransaction();
+
+        try {
+            trans.begin();
+
+            TypedQuery<CartItem> query = em.createQuery(
+                "SELECT ci FROM CartItem ci "
+                + "WHERE ci.cart.customerId = :customerId "
+                + "AND ci.productVariant.variantId = :variantId",
+                CartItem.class
+            );
+
+            query.setParameter("customerId", customerId);
+            query.setParameter("variantId", variantId);
+
+            List<CartItem> items = query.getResultList();
+
+            if (items.isEmpty()) {
+                throw new IllegalArgumentException(
+                    "Không tìm thấy sản phẩm trong giỏ hàng."
+                );
+            }
+
+            items.get(0).setQuantity(quantity);
+
+            trans.commit();
+
+        } catch (Exception e) {
+            if (trans.isActive()) {
+                trans.rollback();
+            }
+
+            throw new RuntimeException(
+                "Không thể cập nhật sản phẩm trong giỏ hàng.", e
+            );
+
+        } finally {
+            em.close();
+        }
     }
 
+    
+    public void deleteCartItem(int customerId, int variantId) {
+        EntityManager em = DBUtil.getEmFactory().createEntityManager();
+        EntityTransaction trans = em.getTransaction();
+
+        try {
+            trans.begin();
+
+            List<CartItem> items = em.createQuery(
+                "SELECT ci FROM CartItem ci "
+                + "WHERE ci.cart.customerId = :customerId "
+                + "AND ci.productVariant.variantId = :variantId",
+                CartItem.class
+            )
+            .setParameter("customerId", customerId)
+            .setParameter("variantId", variantId)
+            .getResultList();
+
+            if (items.isEmpty()) {
+                throw new IllegalArgumentException(
+                    "Không tìm thấy sản phẩm trong giỏ hàng. "
+                    + "customerId=" + customerId
+                    + ", variantId=" + variantId
+                );
+            }
+
+            em.remove(items.get(0));
+            trans.commit();
+
+        } catch (Exception e) {
+            if (trans.isActive()) {
+                trans.rollback();
+            }
+            throw new RuntimeException(
+                "Không thể xóa sản phẩm khỏi giỏ hàng.", e
+            );
+        } finally {
+            em.close();
+        }
+    }
+}

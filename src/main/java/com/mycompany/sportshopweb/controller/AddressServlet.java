@@ -19,8 +19,15 @@ import java.util.List;
 @WebServlet("/addresses")
 public class AddressServlet extends HttpServlet {
 
-    private final AdressDAO adressDAO = new AdressDAO();
-    private final CustomerDAO customerDAO = new CustomerDAO();
+    private AdressDAO adressDAO;
+    private CustomerDAO customerDAO;
+
+    // Tận dụng vòng đời Servlet: Khởi tạo các DAO một lần duy nhất khi Servlet được nạp
+    @Override
+    public void init() throws ServletException {
+        adressDAO = new AdressDAO();
+        customerDAO = new CustomerDAO();
+    }
 
     // Tìm customerId của tài khoản đang đăng nhập
     // Hiển thị danh sách địa chỉ
@@ -95,83 +102,59 @@ public class AddressServlet extends HttpServlet {
     }
 
     // Thêm địa chỉ mới
-    private boolean insertAddress(HttpServletRequest request,
-            int customerId) {
-
-        String province = request.getParameter("province");
-        String ward = request.getParameter("ward");
-        String detailAddress = request.getParameter("detailAddress");
-
-        if (isBlank(province)
-                || isBlank(ward)
-                || isBlank(detailAddress)) {
-            return false;
-        }
-
+    private boolean insertAddress(HttpServletRequest request, int customerId) {
         Customer customer = customerDAO.findById(customerId);
-
         if (customer == null) {
             return false;
         }
 
         Adress address = new Adress();
-
         address.setCustomer(customer);
-        address.setProvince(province.trim());
-        address.setWard(ward.trim());
-        address.setDetailAddress(detailAddress.trim());
 
-        String defaultValue = request.getParameter("isDefault");
-
-        boolean isDefault = "true".equals(defaultValue);
-
-        address.setDefault(isDefault);
+        if (!populateAddressFromRequest(request, address)) {
+            return false;
+        }
 
         return adressDAO.insert(address);
     }
 
     // Cập nhật địa chỉ đã lưu
-    private boolean updateAddress(HttpServletRequest request,
-            int customerId) {
-
+    private boolean updateAddress(HttpServletRequest request, int customerId) {
         int addressId;
-
         try {
-            addressId = Integer.parseInt(
-                    request.getParameter("addressId"));
+            addressId = Integer.parseInt(request.getParameter("addressId"));
         } catch (NumberFormatException e) {
             return false;
         }
 
         // Chỉ lấy địa chỉ thuộc khách hàng đang đăng nhập
-        Adress address = adressDAO.findByIdAndCustomerId(
-                addressId, customerId);
-
+        Adress address = adressDAO.findByIdAndCustomerId(addressId, customerId);
         if (address == null) {
             return false;
         }
 
+        if (!populateAddressFromRequest(request, address)) {
+            return false;
+        }
+
+        return adressDAO.update(address, customerId);
+    }
+
+    // Trích xuất và kiểm tra tính hợp lệ của dữ liệu địa chỉ từ form (Áp dụng DRY)
+    private boolean populateAddressFromRequest(HttpServletRequest request, Adress address) {
         String province = request.getParameter("province");
         String ward = request.getParameter("ward");
         String detailAddress = request.getParameter("detailAddress");
 
-        if (isBlank(province)
-                || isBlank(ward)
-                || isBlank(detailAddress)) {
+        if (isBlank(province) || isBlank(ward) || isBlank(detailAddress)) {
             return false;
         }
 
         address.setProvince(province.trim());
         address.setWard(ward.trim());
         address.setDetailAddress(detailAddress.trim());
-
-        String defaultValue = request.getParameter("isDefault");
-
-        boolean isDefault = "true".equals(defaultValue);
-
-        address.setDefault(isDefault);
-
-        return adressDAO.update(address, customerId);
+        address.setDefault("true".equals(request.getParameter("isDefault")));
+        return true;
     }
 
     // Đặt địa chỉ làm mặc định

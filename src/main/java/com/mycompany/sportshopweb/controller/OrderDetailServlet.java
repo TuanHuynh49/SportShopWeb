@@ -1,3 +1,4 @@
+
 package com.mycompany.sportshopweb.controller;
 
 import com.mycompany.sportshopweb.dao.OrderDAO;
@@ -19,19 +20,24 @@ import java.util.List;
 @WebServlet("/order-detail")
 public class OrderDetailServlet extends HttpServlet {
 
-    private final OrderDAO orderDAO = new OrderDAO();
+    private OrderDAO orderDAO = new OrderDAO();
+    private PaymentDAO paymentDAO = new PaymentDAO();
+    
+    @Override
+    public void init() throws ServletException{
+        orderDAO = new OrderDAO();
+        paymentDAO = new PaymentDAO();
+    }
 
     @Override
     protected void doGet(HttpServletRequest request,
-                         HttpServletResponse response)
+            HttpServletResponse response)
             throws ServletException, IOException {
 
-        HttpSession session = request.getSession();
+        HttpSession session = request.getSession(false);
 
-        // Kiem tra dang nhap
-        if (session == null
-                || session.getAttribute("customer") == null) {
-
+        // 1. Kiểm tra đăng nhập
+        if (!isLoggedIn(session)) {
             response.sendRedirect(
                     request.getContextPath() + "/LoginServlet");
             return;
@@ -39,85 +45,91 @@ public class OrderDetailServlet extends HttpServlet {
 
         Customer customer = (Customer) session.getAttribute("customer");
 
+        // 2. Lấy orderId từ URL
+        int orderId = readOrderId(request, response);
+
+        if (orderId <= 0) {
+            return;
+        }
+
+        try {
+            // 3. Tìm đơn hàng thuộc khách hàng đang đăng nhập
+            Order order = findCustomerOrder(
+                    customer.getCustomerId(), orderId);
+
+            if (order == null) {
+                response.sendError(
+                        HttpServletResponse.SC_NOT_FOUND,
+                        "Không tìm thấy đơn hàng.");
+                return;
+            }
+
+            // 4. Lấy thông tin thanh toán
+            List<Payment> payments =
+                    paymentDAO.findByOrderId(orderId);
+
+            Payment payment = null;
+
+            if (payments != null && !payments.isEmpty()) {
+                payment = payments.get(0);
+            }
+
+            // 5. Gửi dữ liệu sang JSP
+            request.setAttribute("order", order);
+            request.setAttribute("payment", payment);
+
+            request.getRequestDispatcher("/views/order-detail.jsp")
+                    .forward(request, response);
+
+        } catch (Exception e) {
+            throw new ServletException(
+                    "Lỗi khi tải chi tiết đơn hàng.", e);
+        }
+    }
+
+    private boolean isLoggedIn(HttpSession session) {
+        return session != null
+                && session.getAttribute("customer") != null;
+    }
+
+    private int readOrderId(HttpServletRequest request,
+            HttpServletResponse response) throws IOException {
+
         String orderIdParam = request.getParameter("orderId");
 
         if (orderIdParam == null || orderIdParam.isBlank()) {
             response.sendRedirect(
                     request.getContextPath() + "/orders");
-            return;
+            return -1;
         }
 
         try {
             int orderId = Integer.parseInt(orderIdParam);
-            PaymentDAO paymentDAO = new PaymentDAO();
 
-List<Payment> payments = paymentDAO.findByOrderId(orderId);
-
-System.out.println("===== PAYMENT DEBUG =====");
-System.out.println("Requested orderId: " + orderId);
-System.out.println("Payment count: " + payments.size());
-
-Payment payment = null;
-
-if (!payments.isEmpty()) {
-    payment = payments.get(0);
-
-    System.out.println("Payment ID: " + payment.getPaymentId());
-    System.out.println("Payment orderId: " + payment.getOrderId());
-    System.out.println("Payment method: " + payment.getPaymentMethod());
-} else {
-    System.out.println("No Payment found for orderId = " + orderId);
-}
-
-request.setAttribute("payment", payment);
-System.out.println("=========================");
-
-            // Dung ham DAO co san
-            List<Order> orders =
-                    orderDAO.findByCustomerId(
-                            customer.getCustomerId());
-
-            Order selectedOrder = null;
-
-            // Tim don hang theo ID
-            for (Order order : orders) {
-                if (order.getOrderId() == orderId) {
-                    selectedOrder = order;
-                    break;
-                }
+            if (orderId <= 0) {
+                response.sendRedirect(
+                        request.getContextPath() + "/orders");
+                return -1;
             }
 
-            // Khong tim thay don hang cua khach nay
-            if (selectedOrder == null) {
-                response.sendError(
-                        HttpServletResponse.SC_NOT_FOUND,
-                        "Order not found");
-                return;
-            }
-            System.out.println("===== ORDER DETAIL DEBUG =====");
-System.out.println("Order ID: " + selectedOrder.getOrderId());
-System.out.println("Order items null: " + (selectedOrder.getOrderItems() == null));
-
-if (selectedOrder.getOrderItems() != null) {
-    System.out.println("Order items size: "
-            + selectedOrder.getOrderItems().size());
-
-    for (var item : selectedOrder.getOrderItems()) {
-        System.out.println("Quantity: " + item.getQuantity());
-    
-    }
-}
-
-System.out.println("==============================");
-            request.setAttribute("order", selectedOrder);
-
-            request.getRequestDispatcher(
-                    "/views/order-detail.jsp")
-                    .forward(request, response);
+            return orderId;
 
         } catch (NumberFormatException e) {
             response.sendRedirect(
                     request.getContextPath() + "/orders");
+            return -1;
         }
+    }
+
+    private Order findCustomerOrder(int customerId, int orderId) {
+        List<Order> orders = orderDAO.findByCustomerId(customerId);
+
+        for (Order order : orders) {
+            if (order.getOrderId() == orderId) {
+                return order;
+            }
+        }
+
+        return null;
     }
 }

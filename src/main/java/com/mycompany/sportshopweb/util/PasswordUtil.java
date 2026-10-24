@@ -44,7 +44,30 @@ public class PasswordUtil {
         if (inputHashed.equalsIgnoreCase(storedPassword)) {
             return true;
         }
-        // Trường hợp dữ liệu mẫu (seed data) trong DB là chữ thường chưa băm
-        return inputPassword.equals(storedPassword);
+        // Mật khẩu không trùng khớp -> Từ chối xác thực
+        return false;
+    }
+
+    // Kiểm tra độ mạnh mật khẩu theo chuẩn Chapter 17 (Slide 18 & 19)
+    public static String checkPasswordStrength(String password) {
+        if (password == null || password.trim().isEmpty()) {
+            return "Password cannot be empty.";
+        }
+        if (password.length() < 8) {
+            return "Password must be at least 8 characters long.";
+        }
+        // Bắt buộc chứa ít nhất một chữ hoa
+        if (!password.matches(".*[A-Z].*")) {
+            return "Password must contain at least one uppercase letter (A-Z).";
+        }
+        // Bắt buộc chứa ít nhất một chữ số
+        if (!password.matches(".*[0-9].*")) {
+            return "Password must contain at least one number (0-9).";
+        }
+        // Bắt buộc chứa ít nhất một ký tự đặc biệt
+        if (!password.matches(".*[!@#$%^&*(),.?\":{}|<>_].*")) {
+            return "Password must contain at least one special character (!@#$%^&*...).";
+        }
+        return null;
     }
 }

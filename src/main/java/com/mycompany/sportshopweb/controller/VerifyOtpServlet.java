@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
- */
 package com.mycompany.sportshopweb.controller;
 
 import com.mycompany.sportshopweb.dao.CartDAO;
@@ -30,6 +26,18 @@ import jakarta.servlet.http.HttpSession;
 @WebServlet(name = "VerifyOtpServlet", urlPatterns = {"/VerifyOtpServlet"})
 public class VerifyOtpServlet extends HttpServlet {
 
+    private UserDAO userDAO;
+    private CustomerDAO customerDAO;
+    private CartDAO cartDAO;
+
+    // Tận dụng vòng đời Servlet: Khởi tạo các DAO một lần duy nhất khi Servlet được nạp
+    @Override
+    public void init() throws ServletException {
+        userDAO = new UserDAO();
+        customerDAO = new CustomerDAO();
+        cartDAO = new CartDAO();
+    }
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -44,14 +52,7 @@ public class VerifyOtpServlet extends HttpServlet {
         }
 
         // Tính toán số giây còn lại của mã OTP để hiển thị đồng hồ đếm ngược
-        Long expiryTime = (Long) session.getAttribute("reg_otp_expiry");
-        long remainingSeconds = 300;
-        if (expiryTime != null) {
-            long diff = (expiryTime - System.currentTimeMillis()) / 1000;
-            remainingSeconds = diff > 0 ? diff : 0;
-        }
-        request.setAttribute("remainingSeconds", remainingSeconds);
-
+        request.setAttribute("remainingSeconds", getRemainingSeconds(session));
         request.getRequestDispatcher("/views/verify-otp.jsp").forward(request, response);
     }
 
@@ -78,7 +79,7 @@ public class VerifyOtpServlet extends HttpServlet {
         String fullName = (firstName != null ? firstName : "") + " " + (lastName != null ? lastName : "");
         String action = request.getParameter("action");
 
-        // 1. Xử lý trường hợp người dùng bấm "Gửi lại mã OTP"
+        // Xử lý trường hợp người dùng bấm "Gửi lại mã OTP"
         if ("resend".equalsIgnoreCase(action)) {
             String newOtp = String.format("%06d", new Random().nextInt(1000000));
             long newExpiry = System.currentTimeMillis() + (5 * 60 * 1000); // 5 phút
@@ -86,8 +87,8 @@ public class VerifyOtpServlet extends HttpServlet {
             session.setAttribute("reg_otp", newOtp);
             session.setAttribute("reg_otp_expiry", newExpiry);
 
-            // Gửi lại email
-            EmailService.sendOtpEmail(regEmail, fullName, newOtp);
+            // Gửi lại email qua Brevo API
+            EmailService.sendOtpEmail(regEmail, newOtp, "Gửi lại mã xác thực cho " + fullName);
 
             request.setAttribute("message", "A new OTP has been sent to your email (" + regEmail + "). Please check your inbox!");
             request.setAttribute("remainingSeconds", 300);
@@ -95,16 +96,14 @@ public class VerifyOtpServlet extends HttpServlet {
             return;
         }
 
-        // 2. Xử lý xác thực mã OTP người dùng nhập vào
+        // Xử lý xác thực mã OTP người dùng nhập vào
         String enteredOtp = request.getParameter("otp");
         if (enteredOtp != null) {
             enteredOtp = enteredOtp.trim();
         }
 
         if (enteredOtp == null || enteredOtp.isEmpty()) {
-            request.setAttribute("error", "Please enter the 6-digit OTP code sent to your email.");
-            passRemainingSeconds(session, request);
-            request.getRequestDispatcher("/views/verify-otp.jsp").forward(request, response);
+            forwardError(request, response, session, "Please enter the 6-digit OTP code sent to your email.");
             return;
         }
 
@@ -118,18 +117,11 @@ public class VerifyOtpServlet extends HttpServlet {
 
         // Kiểm tra mã OTP có trùng khớp không
         if (!regOtp.equals(enteredOtp)) {
-            request.setAttribute("error", "Invalid OTP code. Please check your email and try again.");
-            passRemainingSeconds(session, request);
-            request.getRequestDispatcher("/views/verify-otp.jsp").forward(request, response);
+            forwardError(request, response, session, "Invalid OTP code. Please check your email and try again.");
             return;
         }
 
-        // =========================================================================
-        // 3. OTP CHÍNH XÁC -> LƯU VÀO DATABASE (USER, CUSTOMER, CART)
-        // =========================================================================
-        UserDAO userDAO = new UserDAO();
-
-        // Kiểm tra trùng lặp email/sđt lần cuối phòng trường hợp cạnh tranh
+        // Kiểm tra trùng lặp email hoặc số điện thoại lần cuối phòng trường hợp cạnh tranh
         if (userDAO.existsByEmail(regEmail)) {
             request.setAttribute("error", "Email is already registered. Please use another email.");
             request.getRequestDispatcher("/views/register.jsp").forward(request, response);
@@ -144,17 +136,15 @@ public class VerifyOtpServlet extends HttpServlet {
         // Băm mật khẩu SHA-256
         String hashedPassword = PasswordUtil.hashPassword(rawPassword);
 
-        // Lưu User
+        // Lưu thông tin User
         User user = new User(phone, regEmail, hashedPassword);
         boolean isUserSaved = userDAO.insert(user);
         if (!isUserSaved) {
-            request.setAttribute("error", "System error while creating account. Please try again.");
-            request.getRequestDispatcher("/views/verify-otp.jsp").forward(request, response);
+            forwardError(request, response, session, "System error while creating account. Please try again.");
             return;
         }
 
-        // Lưu Customer
-        CustomerDAO customerDAO = new CustomerDAO();
+        // Lưu thông tin Customer
         MembershipTier defaultTier = customerDAO.getDefaultMembershipTier();
         Customer customer = new Customer();
         customer.setUser(user);
@@ -164,16 +154,42 @@ public class VerifyOtpServlet extends HttpServlet {
         customer.setGender(gender != null ? gender : "Other");
         customerDAO.insert(customer);
 
-        // Tạo giỏ hàng rỗng ban đầu
+        // Tạo giỏ hàng rỗng ban đầu cho khách hàng
         Cart cart = new Cart();
         cart.setCustomer(customer);
-        CartDAO cartDAO = new CartDAO();
         cartDAO.insert(cart);
 
         // Gửi email chào mừng thành viên mới kèm mã ưu đãi WELCOME10
         EmailService.sendWelcomeEmail(regEmail, fullName);
 
         // Xóa các dữ liệu đăng ký tạm thời khỏi Session
+        clearRegistrationSession(session);
+
+        // Chuyển hướng sang trang Đăng nhập kèm thông báo thành công
+        request.setAttribute("message", "Email verified successfully! Your account is active. Please sign in.");
+        request.getRequestDispatcher("/views/login.jsp").forward(request, response);
+    }
+
+    // Helper chuyển tiếp lỗi kèm số giây còn lại của mã OTP
+    private void forwardError(HttpServletRequest request, HttpServletResponse response,
+            HttpSession session, String errorMessage) throws ServletException, IOException {
+        request.setAttribute("error", errorMessage);
+        request.setAttribute("remainingSeconds", getRemainingSeconds(session));
+        request.getRequestDispatcher("/views/verify-otp.jsp").forward(request, response);
+    }
+
+    // Tính toán số giây hiệu lực còn lại của mã OTP trong session
+    private long getRemainingSeconds(HttpSession session) {
+        Long expiryTime = (Long) session.getAttribute("reg_otp_expiry");
+        if (expiryTime != null) {
+            long diff = (expiryTime - System.currentTimeMillis()) / 1000;
+            return diff > 0 ? diff : 0;
+        }
+        return 0;
+    }
+
+    // Dọn dẹp các biến tạm thời phục vụ đăng ký khỏi session
+    private void clearRegistrationSession(HttpSession session) {
         session.removeAttribute("reg_firstName");
         session.removeAttribute("reg_lastName");
         session.removeAttribute("reg_email");
@@ -182,19 +198,5 @@ public class VerifyOtpServlet extends HttpServlet {
         session.removeAttribute("reg_password");
         session.removeAttribute("reg_otp");
         session.removeAttribute("reg_otp_expiry");
-
-        // Chuyển hướng sang trang Đăng nhập kèm thông báo thành công
-        request.setAttribute("message", "Email verified successfully! Your account is active. Please sign in.");
-        request.getRequestDispatcher("/views/login.jsp").forward(request, response);
-    }
-
-    private void passRemainingSeconds(HttpSession session, HttpServletRequest request) {
-        Long expiryTime = (Long) session.getAttribute("reg_otp_expiry");
-        long remaining = 0;
-        if (expiryTime != null) {
-            long diff = (expiryTime - System.currentTimeMillis()) / 1000;
-            remaining = diff > 0 ? diff : 0;
-        }
-        request.setAttribute("remainingSeconds", remaining);
     }
 }

@@ -19,6 +19,7 @@ public class AdminDAO {
                     "SELECT a FROM Admin a WHERE a.user.userId = :userId",
                     Admin.class);
 
+            // Gán giá trị vào Named Parameter để chống tấn công SQL Injection
             query.setParameter("userId", userId);
 
             return query.getSingleResult();
