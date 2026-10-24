@@ -154,7 +154,7 @@ public class LoginServlet extends HttpServlet {
 
     // Phân quyền và điều hướng người dùng theo vai trò (Role-based Routing)
     private void navigateByUserRole(HttpServletRequest request, HttpServletResponse response,
-            HttpSession session, User user) throws IOException {
+            HttpSession session, User user) throws IOException, ServletException {
         // Kiểm tra xem tài khoản có phải Admin không
         Admin admin = adminDAO.findByUserId(user.getUserId());
         if (admin != null) {
