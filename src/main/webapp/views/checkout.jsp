@@ -344,7 +344,7 @@
                                         <span>
                                             <strong>Chuyển khoản ngân hàng</strong>
                                             <small>
-                                                Phương thức này cần được xử lý thêm ở backend.
+                                                Thanh toán qua VNPAY
                                             </small>
                                         </span>
                                     </label>

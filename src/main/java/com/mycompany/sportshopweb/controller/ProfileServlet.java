@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
- */
 package com.mycompany.sportshopweb.controller;
 
 import com.mycompany.sportshopweb.dao.CustomerDAO;
@@ -25,6 +21,16 @@ import jakarta.servlet.http.HttpSession;
 @WebServlet(name = "ProfileServlet", urlPatterns = {"/ProfileServlet"})
 public class ProfileServlet extends HttpServlet {
 
+    private UserDAO userDAO;
+    private CustomerDAO customerDAO;
+
+    // Tận dụng vòng đời Servlet: Khởi tạo các DAO một lần duy nhất khi Servlet được nạp
+    @Override
+    public void init() throws ServletException {
+        userDAO = new UserDAO();
+        customerDAO = new CustomerDAO();
+    }
+
     // Khi người dùng vào trang xem hồ sơ cá nhân
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -38,7 +44,6 @@ public class ProfileServlet extends HttpServlet {
         }
 
         User user = (User) session.getAttribute("user");
-        CustomerDAO customerDAO = new CustomerDAO();
         Customer customer = customerDAO.findByUserId(user.getUserId());
         if (customer != null) {
             session.setAttribute("customer", customer);
@@ -93,44 +98,38 @@ public class ProfileServlet extends HttpServlet {
         if (currentPassword == null || currentPassword.isEmpty()
                 || newPassword == null || newPassword.isEmpty()
                 || confirmPassword == null || confirmPassword.isEmpty()) {
-            request.setAttribute("error", "Please fill in all password fields.");
-            request.getRequestDispatcher("/views/profile.jsp").forward(request, response);
+            forwardError(request, response, "Please fill in all password fields.");
             return;
         }
 
-        // Kiểm tra độ dài mật khẩu mới
-        if (newPassword.length() < 6) {
-            request.setAttribute("error", "New password must be at least 6 characters long.");
-            request.getRequestDispatcher("/views/profile.jsp").forward(request, response);
+        // Kiểm tra độ mạnh mật khẩu mới theo chuẩn Chapter 17
+        String passwordError = PasswordUtil.checkPasswordStrength(newPassword);
+        if (passwordError != null) {
+            forwardError(request, response, passwordError);
             return;
         }
 
         // Kiểm tra xác nhận mật khẩu mới có trùng khớp không
         if (!newPassword.equals(confirmPassword)) {
-            request.setAttribute("error", "New password and confirmation password do not match.");
-            request.getRequestDispatcher("/views/profile.jsp").forward(request, response);
+            forwardError(request, response, "New password and confirmation password do not match.");
             return;
         }
 
-        UserDAO userDAO = new UserDAO();
         User userInDb = userDAO.findById(sessionUser.getUserId());
         if (userInDb == null) {
-            request.setAttribute("error", "User account not found. Please sign in again.");
-            request.getRequestDispatcher("/views/profile.jsp").forward(request, response);
+            forwardError(request, response, "User account not found. Please sign in again.");
             return;
         }
 
         // Kiểm tra mật khẩu hiện tại có đúng không
         if (!PasswordUtil.verifyPassword(currentPassword, userInDb.getPasswordHash())) {
-            request.setAttribute("error", "Current password is incorrect.");
-            request.getRequestDispatcher("/views/profile.jsp").forward(request, response);
+            forwardError(request, response, "Current password is incorrect.");
             return;
         }
 
         // Kiểm tra mật khẩu mới không được trùng mật khẩu cũ
         if (PasswordUtil.verifyPassword(newPassword, userInDb.getPasswordHash())) {
-            request.setAttribute("error", "New password cannot be the same as your current password.");
-            request.getRequestDispatcher("/views/profile.jsp").forward(request, response);
+            forwardError(request, response, "New password cannot be the same as your current password.");
             return;
         }
 
@@ -140,8 +139,7 @@ public class ProfileServlet extends HttpServlet {
         boolean updated = userDAO.update(userInDb);
 
         if (!updated) {
-            request.setAttribute("error", "System error while updating password. Please try again.");
-            request.getRequestDispatcher("/views/profile.jsp").forward(request, response);
+            forwardError(request, response, "System error while updating password. Please try again.");
             return;
         }
 
@@ -168,19 +166,14 @@ public class ProfileServlet extends HttpServlet {
 
         // Kiểm tra không được để trống họ và tên
         if (firstName == null || firstName.isEmpty() || lastName == null || lastName.isEmpty()) {
-            request.setAttribute("error", "First name and last name cannot be empty.");
-            request.getRequestDispatcher("/views/profile.jsp").forward(request, response);
+            forwardError(request, response, "First name and last name cannot be empty.");
             return;
         }
-
-        UserDAO userDAO = new UserDAO();
-        CustomerDAO customerDAO = new CustomerDAO();
 
         // Nếu người dùng đổi số điện thoại mới, kiểm tra xem số mới có bị ai dùng chưa
         if (phone != null && !phone.isEmpty() && !phone.equals(user.getPhone())) {
             if (userDAO.existsByPhone(phone)) {
-                request.setAttribute("error", "Phone number is already used by another account.");
-                request.getRequestDispatcher("/views/profile.jsp").forward(request, response);
+                forwardError(request, response, "Phone number is already used by another account.");
                 return;
             }
             user.setPhone(phone);
@@ -203,6 +196,13 @@ public class ProfileServlet extends HttpServlet {
 
         // Gửi thông báo thành công về giao diện profile.jsp
         request.setAttribute("message", "Profile updated successfully!");
+        request.getRequestDispatcher("/views/profile.jsp").forward(request, response);
+    }
+
+    // Helper chuyển hướng báo lỗi (Áp dụng DRY - Don't Repeat Yourself)
+    private void forwardError(HttpServletRequest request, HttpServletResponse response, String errorMessage)
+            throws ServletException, IOException {
+        request.setAttribute("error", errorMessage);
         request.getRequestDispatcher("/views/profile.jsp").forward(request, response);
     }
 }

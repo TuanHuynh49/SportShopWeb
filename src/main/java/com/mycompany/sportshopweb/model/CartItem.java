@@ -1,57 +1,42 @@
 package com.mycompany.sportshopweb.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.EmbeddedId;
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.MapsId;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import java.io.Serializable;
 
 @Entity
-@Table(name = "CartItem")
+@Table(
+    name = "CartItem",
+    uniqueConstraints = {
+        @UniqueConstraint(
+            columnNames = {"customer_id", "variant_id"}
+        )
+    }
+)
 public class CartItem implements Serializable {
 
-    @EmbeddedId
-    private CartItemId id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int cartItemId;
 
     @ManyToOne
-    @MapsId("customerId")
     @JoinColumn(name = "customer_id")
     private Cart cart;
 
     @ManyToOne
-    @MapsId("variantId")
     @JoinColumn(name = "variant_id")
     private ProductVariant productVariant;
 
-    private int quantity;
+    private int quantity = 1;
 
     public CartItem() {
-        this.quantity = 1;
     }
 
-    public CartItem(CartItemId id, ProductVariant productVariant, int quantity) {
-        this.id = id;
-        this.productVariant = productVariant;
-        this.quantity = quantity;
+    public int getCartItemId() {
+        return cartItemId;
     }
 
-    public CartItemId getId() {
-        return id;
-    }
-
-    public void setId(CartItemId id) {
-        this.id = id;
-    }
-
-    public ProductVariant getProductVariant() {
-        return productVariant;
-    }
-
-    public void setProductVariant(ProductVariant productVariant) {
-        this.productVariant = productVariant;
+    public void setCartItemId(int cartItemId) {
+        this.cartItemId = cartItemId;
     }
 
     public Cart getCart() {
@@ -60,6 +45,14 @@ public class CartItem implements Serializable {
 
     public void setCart(Cart cart) {
         this.cart = cart;
+    }
+
+    public ProductVariant getProductVariant() {
+        return productVariant;
+    }
+
+    public void setProductVariant(ProductVariant productVariant) {
+        this.productVariant = productVariant;
     }
 
     public int getQuantity() {

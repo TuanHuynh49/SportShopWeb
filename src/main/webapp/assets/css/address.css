@@ -352,3 +352,24 @@
     color: #9ca3af;
     margin-bottom: 12px;
 }
+
+
+.btn-address-delete {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px 14px;
+    border: 1px solid #dc2626;
+    border-radius: 6px;
+    background-color: #dc2626;
+    color: #ffffff;
+    font: inherit;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.btn-address-delete:hover {
+    background-color: #b91c1c;
+    border-color: #b91c1c;
+}

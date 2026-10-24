@@ -130,7 +130,7 @@
                                 </div>
                             </c:if>
 
-                            <form class="admin-form" action="${pageContext.request.contextPath}/ProductActionServlet"
+                            <form class="admin-form" action="${pageContext.request.contextPath}/admin/product-actions"
                                 method="post" enctype="multipart/form-data">
 
                                 <input type="hidden" name="action" value="${editMode ? 'update' : 'create'}">

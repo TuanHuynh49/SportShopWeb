@@ -11,13 +11,11 @@ import java.time.Duration;
 
 public class EmailService {
 
-    private static final String API_URL =
-            "https://api.brevo.com/v3/smtp/email";
+    private static final String API_URL = "https://api.brevo.com/v3/smtp/email";
 
-    private static final HttpClient HTTP_CLIENT =
-            HttpClient.newBuilder()
-                    .connectTimeout(Duration.ofSeconds(15))
-                    .build();
+    private static final HttpClient HTTP_CLIENT = HttpClient.newBuilder()
+            .connectTimeout(Duration.ofSeconds(15))
+            .build();
 
     private static String getEnv(String name) {
         String value = System.getenv(name);
@@ -57,8 +55,7 @@ public class EmailService {
     public static void sendEmailSync(
             String to,
             String subject,
-            String body
-    ) throws Exception {
+            String body) throws Exception {
 
         String apiKey = getEnv("BREVO_API_KEY");
         String senderEmail = getEnv("BREVO_SENDER_EMAIL");
@@ -67,18 +64,15 @@ public class EmailService {
         if (apiKey.isEmpty()
                 || senderEmail.isEmpty()) {
             throw new IllegalStateException(
-                    "Missing Brevo API environment variables"
-            );
+                    "Missing Brevo API environment variables");
         }
 
         if (to == null || to.isBlank()) {
             throw new IllegalArgumentException(
-                    "Recipient email must not be empty"
-            );
+                    "Recipient email must not be empty");
         }
 
-        String safeSenderName =
-                senderName.isEmpty() ? "SportShop" : senderName;
+        String safeSenderName = senderName.isEmpty() ? "SportShop" : senderName;
 
         String json = """
                 {
@@ -95,12 +89,11 @@ public class EmailService {
                   "htmlContent": "%s"
                 }
                 """.formatted(
-                    jsonEscape(safeSenderName),
-                    jsonEscape(senderEmail),
-                    jsonEscape(to),
-                    jsonEscape(subject),
-                    jsonEscape(body)
-                );
+                jsonEscape(safeSenderName),
+                jsonEscape(senderEmail),
+                jsonEscape(to),
+                jsonEscape(subject),
+                jsonEscape(body));
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(API_URL))
@@ -115,37 +108,32 @@ public class EmailService {
         HttpResponse<String> response = HTTP_CLIENT.send(
                 request,
                 HttpResponse.BodyHandlers.ofString(
-                        StandardCharsets.UTF_8)
-        );
+                        StandardCharsets.UTF_8));
 
         int status = response.statusCode();
 
         if (status < 200 || status >= 300) {
             throw new IOException(
                     "Brevo API error HTTP " + status
-                    + ": " + response.body()
-            );
+                            + ": " + response.body());
         }
 
         System.out.println(
                 "[EmailService] Brevo API gửi email thành công tới: "
-                + to + " | HTTP " + status
-        );
+                        + to + " | HTTP " + status);
     }
 
     public static void sendEmailAsync(
             String to,
             String subject,
-            String body
-    ) {
+            String body) {
         Thread thread = new Thread(() -> {
             try {
                 sendEmailSync(to, subject, body);
             } catch (Exception e) {
                 System.err.println(
                         "[EmailService] Không gửi được email tới "
-                        + to + ": " + e.getMessage()
-                );
+                                + to + ": " + e.getMessage());
                 e.printStackTrace();
             }
         });
@@ -158,8 +146,7 @@ public class EmailService {
     public static void sendOtpEmail(
             String to,
             String otp,
-            String purpose
-    ) {
+            String purpose) {
         String subject = "SportShop - Ma xac thuc OTP";
 
         String body = """
@@ -173,17 +160,15 @@ public class EmailService {
                 </body>
                 </html>
                 """.formatted(
-                    jsonEscape(otp),
-                    jsonEscape(purpose)
-                );
+                jsonEscape(otp),
+                jsonEscape(purpose));
 
         sendEmailAsync(to, subject, body);
     }
 
     public static void sendWelcomeEmail(
             String to,
-            String name
-    ) {
+            String name) {
         String subject = "Chao mung ban den voi SportShop!";
 
         String safeName = name == null || name.isBlank()

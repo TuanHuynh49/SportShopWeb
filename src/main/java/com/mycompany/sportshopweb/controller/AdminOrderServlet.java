@@ -1,11 +1,9 @@
 package com.mycompany.sportshopweb.controller;
 
+import com.mycompany.sportshopweb.dao.AdminOrderDAO;
 import com.mycompany.sportshopweb.model.Order;
 import com.mycompany.sportshopweb.model.OrderStatus;
-import com.mycompany.sportshopweb.util.DBUtil;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.TypedQuery;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -17,6 +15,14 @@ import java.util.List;
 
 @WebServlet(name = "AdminOrderServlet", urlPatterns = { "/admin/orders", "/admin/order-detail" })
 public class AdminOrderServlet extends HttpServlet {
+
+    private AdminOrderDAO adminOrderDAO;
+
+    @Override
+    public void init() throws ServletException {
+        super.init();
+        adminOrderDAO = new AdminOrderDAO();
+    }
 
     // Xử lý GET cho cả trang danh sách và trang chi tiết đơn hàng.
     @Override
@@ -46,71 +52,56 @@ public class AdminOrderServlet extends HttpServlet {
             keyword = keyword.trim();
         }
 
-        EntityManager em = DBUtil.getEmFactory().createEntityManager();
+        List<Order> orders = adminOrderDAO.getAllOrdersWithDetails();
 
-        try {
-            String jpql = "SELECT DISTINCT o FROM Order o " +
-                    "JOIN FETCH o.customer c " +
-                    "JOIN FETCH c.user " +
-                    "LEFT JOIN FETCH o.orderItems " +
-                    "ORDER BY o.orderId DESC";
+        // Tìm theo mã đơn hàng hoặc tên khách hàng / email.
+        if (keyword != null && !keyword.isEmpty()) {
+            final String search = keyword.toLowerCase();
 
-            TypedQuery<Order> query = em.createQuery(jpql, Order.class);
+            orders = orders.stream()
+                    .filter(order -> {
+                        String orderId = String.valueOf(order.getOrderId());
 
-            List<Order> orders = query.getResultList();
+                        String firstName = order.getCustomer() != null ? order.getCustomer().getFirstName() : "";
+                        String lastName = order.getCustomer() != null ? order.getCustomer().getLastName() : "";
 
-            // Tìm theo mã đơn hàng hoặc tên khách hàng.
-            // Hiện thực hiện lọc trên danh sách đã truy vấn.
-            if (keyword != null && !keyword.isEmpty()) {
-                final String search = keyword.toLowerCase();
+                        String fullName = ((firstName == null ? "" : firstName)
+                                + " "
+                                + (lastName == null ? "" : lastName))
+                                .toLowerCase();
 
-                orders = orders.stream()
-                        .filter(order -> {
-                            String orderId = String.valueOf(order.getOrderId());
+                        String email = (order.getCustomer() != null && order.getCustomer().getUser() != null)
+                                ? order.getCustomer().getUser().getEmail()
+                                : "";
 
-                            String firstName = order.getCustomer().getFirstName();
+                        email = email == null
+                                ? ""
+                                : email.toLowerCase();
 
-                            String lastName = order.getCustomer().getLastName();
-
-                            String fullName = ((firstName == null ? "" : firstName)
-                                    + " "
-                                    + (lastName == null ? "" : lastName))
-                                    .toLowerCase();
-
-                            String email = order.getCustomer().getUser().getEmail();
-
-                            email = email == null
-                                    ? ""
-                                    : email.toLowerCase();
-
-                            return orderId.contains(search)
-                                    || fullName.contains(search)
-                                    || email.contains(search);
-                        })
-                        .toList();
-            }
-
-            // Tính số đơn chờ xử lý (PENDING hoặc CONFIRMED)
-            long pendingOrders = orders.stream()
-                    .filter(o -> o.getOrderStatus() == OrderStatus.PENDING
-                            || o.getOrderStatus() == OrderStatus.CONFIRMED)
-                    .count();
-
-            // Tính tổng doanh thu từ các đơn hàng thành công (COMPLETED)
-            long totalRevenue = orders.stream()
-                    .filter(o -> o.getOrderStatus() == OrderStatus.COMPLETED)
-                    .mapToLong(Order::getTotalAmount)
-                    .sum();
-
-            request.setAttribute("orders", orders);
-            request.setAttribute("totalOrders", orders.size());
-            request.setAttribute("pendingOrders", pendingOrders);
-            request.setAttribute("totalRevenue", totalRevenue);
-            request.setAttribute("keyword", keyword);
-
-        } finally {
-            em.close();
+                        return orderId.contains(search)
+                                || fullName.contains(search)
+                                || email.contains(search);
+                    })
+                    .toList();
         }
+
+        // Tính số đơn chờ xử lý (PENDING hoặc CONFIRMED)
+        long pendingOrders = orders.stream()
+                .filter(o -> o.getOrderStatus() == OrderStatus.PENDING
+                        || o.getOrderStatus() == OrderStatus.CONFIRMED)
+                .count();
+
+        // Tính tổng doanh thu từ các đơn hàng thành công (COMPLETED)
+        long totalRevenue = orders.stream()
+                .filter(o -> o.getOrderStatus() == OrderStatus.COMPLETED)
+                .mapToLong(Order::getTotalAmount)
+                .sum();
+
+        request.setAttribute("orders", orders);
+        request.setAttribute("totalOrders", orders.size());
+        request.setAttribute("pendingOrders", pendingOrders);
+        request.setAttribute("totalRevenue", totalRevenue);
+        request.setAttribute("keyword", keyword);
 
         request.getRequestDispatcher(
                 "/views/admin/orders.jsp").forward(request, response);
@@ -142,28 +133,7 @@ public class AdminOrderServlet extends HttpServlet {
             return;
         }
 
-        EntityManager em = DBUtil.getEmFactory().createEntityManager();
-
-        Order order;
-
-        try {
-            List<Order> results = em.createQuery(
-                    "SELECT DISTINCT o FROM Order o " +
-                            "JOIN FETCH o.customer c " +
-                            "JOIN FETCH c.user " +
-                            "LEFT JOIN FETCH o.orderItems oi " +
-                            "LEFT JOIN FETCH oi.productVariant pv " +
-                            "LEFT JOIN FETCH pv.product " +
-                            "WHERE o.orderId = :orderId",
-                    Order.class)
-                    .setParameter("orderId", orderId)
-                    .getResultList();
-
-            order = results.isEmpty() ? null : results.get(0);
-
-        } finally {
-            em.close();
-        }
+        Order order = adminOrderDAO.getOrderDetailById(orderId);
 
         if (order == null) {
             response.sendError(

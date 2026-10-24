@@ -16,16 +16,12 @@
 
     <main class="pd-main">
 
-        <%-- Breadcrumb --%>
         <nav class="pd-breadcrumb">
             <a href="${pageContext.request.contextPath}/">Trang chủ</a>
-            <span>&rsaquo;</span>
-            <span>${product.category.name}</span>
             <span>&rsaquo;</span>
             <span class="pd-current">${product.productName}</span>
         </nav>
 
-        <%-- Cột trái: Giao diện Focus Ảnh (Thumbnails dọc bên trái + Khung ảnh lớn bên phải) --%>
         <section class="pd-gallery">
             <div class="pd-thumbnails">
                 <c:forEach var="img" items="${product.images}" varStatus="status">
@@ -49,7 +45,6 @@
             </div>
         </section>
 
-        <%-- Cột phải: thông tin sản phẩm (sticky) --%>
         <aside class="pd-info">
 
             <p class="pd-brand">${product.brand.name}</p>
@@ -62,7 +57,6 @@
                 </p>
             </c:if>
 
-            <%-- Tình trạng kho --%>
             <p class="pd-stock ${inStock ? 'in' : 'out'}">
                 <c:choose>
                     <c:when test="${not inStock}">Hết hàng</c:when>

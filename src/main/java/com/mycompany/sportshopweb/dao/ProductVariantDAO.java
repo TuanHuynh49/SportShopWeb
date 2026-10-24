@@ -73,6 +73,12 @@ public class ProductVariantDAO {
             em.persist(variant);
             tx.commit();
 
+            try {
+                em.getEntityManagerFactory().getCache().evict(ProductVariant.class);
+                em.getEntityManagerFactory().getCache().evict(Product.class, productId);
+            } catch (Exception ignored) {
+            }
+
             return true;
         } catch (RuntimeException e) {
             if (tx.isActive()) {
@@ -117,6 +123,14 @@ public class ProductVariantDAO {
             em.merge(variant);
             tx.commit();
 
+            try {
+                em.getEntityManagerFactory().getCache().evict(ProductVariant.class);
+                if (variant.getProduct() != null) {
+                    em.getEntityManagerFactory().getCache().evict(Product.class, variant.getProduct().getProductId());
+                }
+            } catch (Exception ignored) {
+            }
+
             return true;
         } catch (RuntimeException e) {
             if (tx.isActive()) {
@@ -144,8 +158,17 @@ public class ProductVariantDAO {
             }
 
             tx.begin();
+            int prodId = variant.getProduct() != null ? variant.getProduct().getProductId() : 0;
             em.remove(variant);
             tx.commit();
+
+            try {
+                em.getEntityManagerFactory().getCache().evict(ProductVariant.class);
+                if (prodId > 0) {
+                    em.getEntityManagerFactory().getCache().evict(Product.class, prodId);
+                }
+            } catch (Exception ignored) {
+            }
 
             return true;
         } catch (RuntimeException e) {
@@ -157,10 +180,6 @@ public class ProductVariantDAO {
             em.close();
         }
     }
-
-    /**
-     * Lấy tất cả biến thể kèm theo thông tin sản phẩm và ảnh sản phẩm
-     */
     public List<ProductVariant> getAllVariantsWithProducts() {
         EntityManager em = DBUtil.getEmFactory().createEntityManager();
         try {
@@ -175,4 +194,39 @@ public class ProductVariantDAO {
             em.close();
         }
     }
+
+    // =========================================================================
+    // CÁC HÀM XỬ LÝ KHÓA GIỮ CHỖ & TRỪ TỒN KHO CHO LUỒNG THANH TOÁN (PHƯƠNG ÁN A)
+    // =========================================================================
+
+    /**
+     * 1. Khóa giữ chỗ tồn kho (Soft Lock / Inventory Reservation):
+     * Tăng reservedQuantity lên một lượng bằng quantityToReserve,
+     * điều kiện tiên quyết: (quantity - reservedQuantity) >= quantityToReserve.
+     * 
+     * @param em EntityManager hiện tại (để phối hợp cùng transaction của caller)
+     * @param variantId ID biến thể cần giữ chỗ
+     * @param quantityToReserve Số lượng cần giữ chỗ
+     * @return true nếu giữ chỗ thành công, false nếu không đủ hàng khả dụng
+     */
+    public boolean deductStock(
+            EntityManager em, int variantId, int quantity) {
+
+        if (em == null || variantId <= 0 || quantity <= 0) {
+            return false;
+        }
+
+        int updatedCount = em.createQuery(
+                "UPDATE ProductVariant v "
+                + "SET v.quantity = v.quantity - :qty "
+                + "WHERE v.variantId = :variantId "
+                + "AND v.quantity >= :qty "
+                + "AND (v.quantity - v.reservedQuantity) >= :qty")
+                .setParameter("qty", quantity)
+                .setParameter("variantId", variantId)
+                .executeUpdate();
+
+        return updatedCount == 1;
+    }
+
 }

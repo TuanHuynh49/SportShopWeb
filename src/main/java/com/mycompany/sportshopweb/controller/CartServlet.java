@@ -1,3 +1,4 @@
+
 package com.mycompany.sportshopweb.controller;
 
 import com.mycompany.sportshopweb.dao.CartDAO;
@@ -16,30 +17,40 @@ import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @WebServlet("/cart")
 public class CartServlet extends HttpServlet {
 
-    private final CartDAO cartDAO = new CartDAO();
-    private final CartItemDAO cartItemDAO = new CartItemDAO();
+    private static final Logger LOGGER = Logger.getLogger(CartServlet.class.getName());
 
     private static final String SELECTED_IDS = "selectedVariantIds";
 
-    // ========================================
-    // GET: HIỂN THỊ GIỎ HÀNG
-    // ========================================
+    private CartDAO cartDAO;
+    private CartItemDAO cartItemDAO;
+    
+    
     @Override
-    protected void doGet(HttpServletRequest request,
-                         HttpServletResponse response)
+    public void init() throws ServletException {
+        cartDAO = new CartDAO();
+        cartItemDAO = new CartItemDAO();
+    }
+
+    // ==================== DO GET ====================
+
+    @Override
+    protected void doGet(
+            HttpServletRequest request,
+            HttpServletResponse response)
             throws ServletException, IOException {
 
         HttpSession session = request.getSession(false);
 
-        if (session == null || session.getAttribute("customer") == null) {
+        if (!isLoggedIn(session)) {
             response.sendRedirect(
                     request.getContextPath() + "/LoginServlet"
             );
@@ -51,97 +62,70 @@ public class CartServlet extends HttpServlet {
                     (Customer) session.getAttribute("customer");
 
             int customerId = customer.getCustomerId();
-            updateCartCount(session, customerId);
 
-            Cart cart = cartDAO.findByCustomerId(customerId);
+            // Lấy giỏ hàng và danh sách sản phẩm.
+            Cart cart = findCart(customerId);
+            List<CartItem> cartItems = getCartItems(cart);
 
-            List<CartItem> cartItems = new ArrayList<>();
+            // Lấy các sản phẩm đã chọn và loại ID không còn tồn tại.
+            Set<Integer> selectedIds =
+                    getSessionSelectedIds(session);
 
-            if (cart != null && cart.getCartItems() != null) {
-                cartItems = cart.getCartItems();
-            }
+            selectedIds = filterSelectedIds(cart, selectedIds);
 
-            // Lấy danh sách ID đã chọn được lưu trong session.
-            Object savedIds = session.getAttribute(SELECTED_IDS);
-
-            Set<Integer> selectedIds = new HashSet<>();
-
-            if (savedIds instanceof Set<?>) {
-                for (Object id : (Set<?>) savedIds) {
-                    if (id instanceof Integer) {
-                        selectedIds.add((Integer) id);
-                    }
-                }
-            }
-
-            // Loại bỏ ID không còn tồn tại trong giỏ hàng.
-            Set<Integer> existingIds = new HashSet<>();
-
-            for (CartItem item : cartItems) {
-                existingIds.add(
-                        item.getProductVariant().getVariantId()
-                );
-            }
-
-            selectedIds.retainAll(existingIds);
-
-            // Lưu lại danh sách sau khi đồng bộ với giỏ hàng.
             session.setAttribute(SELECTED_IDS, selectedIds);
 
-            // Chỉ tính tổng tiền các sản phẩm đã chọn.
-            BigDecimal total = BigDecimal.ZERO;
+            // Tính tổng tiền của các sản phẩm đã chọn.
+            BigDecimal total =
+                    calculateTotal(cartItems, selectedIds);
 
-            for (CartItem item : cartItems) {
-                int variantId =
-                        item.getProductVariant().getVariantId();
-
-                if (selectedIds.contains(variantId)) {
-                    BigDecimal price = BigDecimal.valueOf(
-                            item.getProductVariant().getPrice()
-                    );
-
-                    BigDecimal subtotal = price.multiply(
-                            BigDecimal.valueOf(item.getQuantity())
-                    );
-
-                    total = total.add(subtotal);
-                }
-            }
+            session.setAttribute(
+                    "cartCount", countItems(cart)
+            );
 
             request.setAttribute("cart", cart);
             request.setAttribute("cartItems", cartItems);
             request.setAttribute("total", total);
-            request.setAttribute("selectedVariantIds", selectedIds);
+            request.setAttribute(
+                    "selectedVariantIds", selectedIds
+            );
 
-            System.out.println("===== CART DO GET =====");
-            System.out.println("Customer ID = " + customerId);
-            System.out.println("Selected IDs = " + selectedIds);
-            System.out.println("Total selected = " + total);
-            
-            
+            // Hiển thị thông báo lỗi nếu có.
+            Object error = session.getAttribute("cartError");
+
+            if (error != null) {
+                request.setAttribute("cartError", error);
+                session.removeAttribute("cartError");
+            }
+
             request.getRequestDispatcher("/views/cart.jsp")
-                   .forward(request, response);
+                    .forward(request, response);
 
         } catch (Exception e) {
+            LOGGER.log(
+                    Level.SEVERE,
+                    "Không thể tải giỏ hàng.", e
+            );
+
             throw new ServletException(
                     "Lỗi khi tải giỏ hàng.", e
             );
         }
     }
 
-    // ========================================
-    // POST: XỬ LÝ CÁC THAO TÁC GIỎ HÀNG
-    // ========================================
+    // ==================== DO POST ====================
+
     @Override
-    protected void doPost(HttpServletRequest request,
-                          HttpServletResponse response)
+    protected void doPost(
+            HttpServletRequest request,
+            HttpServletResponse response)
             throws ServletException, IOException {
 
         request.setCharacterEncoding("UTF-8");
 
         HttpSession session = request.getSession(false);
 
-        if (session == null || session.getAttribute("customer") == null) {
+        if (!isLoggedIn(session)) {
             response.sendRedirect(
                     request.getContextPath() + "/LoginServlet"
             );
@@ -153,159 +137,98 @@ public class CartServlet extends HttpServlet {
                     (Customer) session.getAttribute("customer");
 
             int customerId = customer.getCustomerId();
-
             String action = request.getParameter("action");
-            String[] submittedIds = request.getParameterValues(SELECTED_IDS);
 
-if (submittedIds != null) {
-    Set<Integer> selectedIds = new HashSet<>();
-
-    for (String id : submittedIds) {
-        selectedIds.add(Integer.parseInt(id));
-    }
-
-    session.setAttribute(SELECTED_IDS, selectedIds);
-}
-
-            // ------------------------------------
-            // 1. CẬP NHẬT TỔNG TIỀN THEO CHECKBOX
-            // ------------------------------------
-            if ("updateTotal".equals(action)) {
-
-                Set<Integer> selectedIds =
-                        readSelectedIds(request, response);
-
-                if (selectedIds == null) {
-                    return;
-                }
-
-                // Lưu lựa chọn để doGet giữ checkbox sau khi tải lại.
-                session.setAttribute(SELECTED_IDS, selectedIds);
-
-                response.sendRedirect(
-                        request.getContextPath() + "/cart"
-                );
-                return;
-            }
-
-            // ------------------------------------
-            // 2. CÁC ACTION CÒN LẠI
-            // ------------------------------------
             if (action == null || action.isBlank()) {
                 throw new IllegalArgumentException(
                         "Action không hợp lệ."
                 );
             }
 
-            String variantParam = request.getParameter("variantId");
+            // Lưu checkbox trước khi xử lý action.
+            // Điều này giúp giữ lựa chọn khi nhấn Update.
+            Set<Integer> selectedIds = readSelectedIds(request);
 
-            if (variantParam == null || variantParam.isBlank()) {
-                throw new IllegalArgumentException(
-                        "Thiếu mã phiên bản sản phẩm."
-                );
+            session.setAttribute(SELECTED_IDS, selectedIds);
+
+            // Chỉ cập nhật lựa chọn, không thay đổi database.
+            if ("updateTotal".equals(action)) {
+                redirectToCart(request, response);
+                return;
             }
 
-            int variantId = Integer.parseInt(variantParam);
+            int variantId = readPositiveInt(
+                    request, "variantId"
+            );
 
-            if (variantId <= 0) {
-                throw new IllegalArgumentException(
-                        "Mã phiên bản sản phẩm không hợp lệ."
-                );
-            }
-
-            // ------------------------------------
-            // 3. THÊM SẢN PHẨM
-            // ------------------------------------
             if ("add".equals(action)) {
-
-                int quantity = Integer.parseInt(
-                        request.getParameter("quantity")
+                int quantity = readPositiveInt(
+                        request, "quantity"
                 );
 
-                if (quantity <= 0) {
-                    throw new IllegalArgumentException(
-                            "Số lượng phải lớn hơn 0."
-                    );
-                }
+                validateIds(customerId, variantId);
+                validateQuantity(quantity);
 
                 cartItemDAO.insertCartItem(
                         customerId, variantId, quantity
                 );
 
-            // ------------------------------------
-            // 4. CẬP NHẬT SỐ LƯỢNG
-            // ------------------------------------
             } else if ("update".equals(action)) {
-
-                int quantity = Integer.parseInt(
-                        request.getParameter("quantity")
+                int quantity = readPositiveInt(
+                        request, "quantity"
                 );
 
-                if (quantity <= 0) {
-                    throw new IllegalArgumentException(
-                            "Số lượng phải lớn hơn 0."
-                    );
-                }
+                validateIds(customerId, variantId);
+                validateQuantity(quantity);
 
                 cartItemDAO.updateCartItem(
                         customerId, variantId, quantity
                 );
 
-            // ------------------------------------
-            // 5. XÓA SẢN PHẨM
-            // ------------------------------------
             } else if ("delete".equals(action)) {
+                validateIds(customerId, variantId);
 
                 cartItemDAO.deleteCartItem(
                         customerId, variantId
                 );
 
-                // Nếu sản phẩm bị xóa, bỏ ID đó khỏi lựa chọn.
-                Object savedIds = session.getAttribute(SELECTED_IDS);
+                // Xóa sản phẩm khỏi danh sách được chọn.
+                selectedIds.remove(variantId);
 
-                if (savedIds instanceof Set<?>) {
-                    Set<Integer> selectedIds = new HashSet<>();
-
-                    for (Object id : (Set<?>) savedIds) {
-                        if (id instanceof Integer) {
-                            selectedIds.add((Integer) id);
-                        }
-                    }
-
-                    selectedIds.remove(variantId);
-
-                    session.setAttribute(SELECTED_IDS, selectedIds);
-                }
+                session.setAttribute(
+                        SELECTED_IDS, selectedIds
+                );
 
             } else {
                 throw new IllegalArgumentException(
-                        "Action không hợp lệ."
+                        "Action không được hỗ trợ."
                 );
             }
-            updateCartCount(session, customerId);
-            // Quay lại giỏ hàng; doGet sẽ giữ checkbox đã lưu.
-            response.sendRedirect(
-                    request.getContextPath() + "/cart"
+
+            // Cập nhật số lượng sản phẩm trong biểu tượng giỏ hàng.
+            Cart cart = findCart(customerId);
+
+            session.setAttribute(
+                    "cartCount", countItems(cart)
             );
+
+            redirectToCart(request, response);
 
         } catch (NumberFormatException e) {
-
             response.sendError(
                     HttpServletResponse.SC_BAD_REQUEST,
-                    "Mã sản phẩm hoặc số lượng phải là số nguyên."
+                    "ID hoặc số lượng phải là số nguyên hợp lệ."
             );
 
-        } catch (IllegalArgumentException | IllegalStateException e) {
-
-            request.getSession().setAttribute(
-                    "cartError", e.getMessage()
-            );
-
-            response.sendRedirect(
-                    request.getContextPath() + "/cart"
-            );
+        } catch (IllegalArgumentException e) {
+            session.setAttribute("cartError", e.getMessage());
+            redirectToCart(request, response);
 
         } catch (Exception e) {
+            LOGGER.log(
+                    Level.SEVERE,
+                    "Không thể xử lý thao tác giỏ hàng.", e
+            );
 
             throw new ServletException(
                     "Lỗi khi xử lý giỏ hàng.", e
@@ -313,57 +236,191 @@ if (submittedIds != null) {
         }
     }
 
-    // ========================================
-    // ĐỌC DANH SÁCH CHECKBOX ĐƯỢC GỬI LÊN
-    // ========================================
+    // ==================== CART HELPERS ====================
+
+    // Kiểm tra khách hàng đã đăng nhập.
+    private boolean isLoggedIn(HttpSession session) {
+        return session != null
+                && session.getAttribute("customer") instanceof Customer;
+    }
+
+    // Tìm giỏ hàng theo khách hàng.
+    private Cart findCart(int customerId) {
+        return cartDAO.findByCustomerId(customerId);
+    }
+
+    // Lấy danh sách sản phẩm trong giỏ hàng.
+    private List<CartItem> getCartItems(Cart cart) {
+        if (cart == null || cart.getCartItems() == null) {
+            return new ArrayList<>();
+        }
+
+        return cart.getCartItems();
+    }
+
+    // Đếm số dòng sản phẩm trong giỏ hàng.
+    private int countItems(Cart cart) {
+        if (cart == null || cart.getCartItems() == null) {
+            return 0;
+        }
+
+        return cart.getCartItems().size();
+    }
+
+    // Kiểm tra ID khách hàng và sản phẩm.
+    private void validateIds(int customerId, int variantId) {
+        if (customerId <= 0 || variantId <= 0) {
+            throw new IllegalArgumentException(
+                    "Mã khách hàng hoặc sản phẩm không hợp lệ."
+            );
+        }
+    }
+
+    // Kiểm tra số lượng sản phẩm.
+    private void validateQuantity(int quantity) {
+        if (quantity <= 0) {
+            throw new IllegalArgumentException(
+                    "Số lượng phải lớn hơn 0."
+            );
+        }
+    }
+
+    // ==================== SELECTED ITEMS HELPERS ====================
+
+    // Lấy danh sách sản phẩm đã chọn từ session.
+    private Set<Integer> getSessionSelectedIds(
+            HttpSession session) {
+
+        Object savedIds = session.getAttribute(SELECTED_IDS);
+        Set<Integer> result = new HashSet<>();
+
+        if (savedIds instanceof Set<?>) {
+            for (Object id : (Set<?>) savedIds) {
+                if (id instanceof Integer) {
+                    result.add((Integer) id);
+                }
+            }
+        }
+
+        return result;
+    }
+
+    // Đọc tất cả checkbox được gửi lên từ form.
     private Set<Integer> readSelectedIds(
-            HttpServletRequest request,
-            HttpServletResponse response)
-            throws IOException {
+            HttpServletRequest request) {
 
-        String[] ids =
-                request.getParameterValues(SELECTED_IDS);
-
+        String[] ids = request.getParameterValues(SELECTED_IDS);
         Set<Integer> selectedIds = new HashSet<>();
 
         if (ids == null) {
             return selectedIds;
         }
 
-        try {
-            for (String id : ids) {
-                int variantId = Integer.parseInt(id);
+        for (String id : ids) {
+            int variantId = Integer.parseInt(id);
 
-                if (variantId <= 0) {
-                    response.sendError(
-                            HttpServletResponse.SC_BAD_REQUEST,
-                            "ID sản phẩm không hợp lệ."
-                    );
-                    return null;
-                }
-
-                selectedIds.add(variantId);
+            if (variantId <= 0) {
+                throw new IllegalArgumentException(
+                        "ID sản phẩm không hợp lệ."
+                );
             }
 
-        } catch (NumberFormatException e) {
-            response.sendError(
-                    HttpServletResponse.SC_BAD_REQUEST,
-                    "ID sản phẩm không hợp lệ."
-            );
-            return null;
+            selectedIds.add(variantId);
         }
 
         return selectedIds;
     }
-    private void updateCartCount(HttpSession session, int customerId) {
-    Cart cart = cartDAO.findByCustomerId(customerId);
 
-    int cartCount = 0;
+    // Chỉ giữ ID của những sản phẩm còn trong giỏ hàng.
+    private Set<Integer> filterSelectedIds(
+            Cart cart, Set<Integer> selectedIds) {
 
-    if (cart != null && cart.getCartItems() != null) {
-        cartCount = cart.getCartItems().size();
+        Set<Integer> existingIds = new HashSet<>();
+
+        if (cart == null || cart.getCartItems() == null) {
+            return existingIds;
+        }
+
+        for (CartItem item : cart.getCartItems()) {
+            if (item.getProductVariant() != null) {
+                existingIds.add(
+                        item.getProductVariant().getVariantId()
+                );
+            }
+        }
+
+        existingIds.retainAll(selectedIds);
+
+        return existingIds;
     }
 
-    session.setAttribute("cartCount", cartCount);
-}
+    // Tính tổng tiền của các sản phẩm đã chọn.
+    private BigDecimal calculateTotal(
+            List<CartItem> cartItems,
+            Set<Integer> selectedIds) {
+
+        BigDecimal total = BigDecimal.ZERO;
+
+        if (cartItems == null || selectedIds == null) {
+            return total;
+        }
+
+        for (CartItem item : cartItems) {
+            if (item.getProductVariant() == null) {
+                continue;
+            }
+
+            int variantId =
+                    item.getProductVariant().getVariantId();
+
+            if (selectedIds.contains(variantId)) {
+                BigDecimal price = BigDecimal.valueOf(
+                        item.getProductVariant().getPrice()
+                );
+
+                BigDecimal subtotal = price.multiply(
+                        BigDecimal.valueOf(item.getQuantity())
+                );
+
+                total = total.add(subtotal);
+            }
+        }
+
+        return total;
+    }
+
+    // Đọc một tham số số nguyên dương.
+    private int readPositiveInt(
+            HttpServletRequest request,
+            String parameterName) {
+
+        String value = request.getParameter(parameterName);
+
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException(
+                    "Thiếu tham số: " + parameterName
+            );
+        }
+
+        int number = Integer.parseInt(value);
+
+        if (number <= 0) {
+            throw new IllegalArgumentException(
+                    parameterName + " phải lớn hơn 0."
+            );
+        }
+
+        return number;
+    }
+
+    // Chuyển về trang giỏ hàng sau khi xử lý.
+    private void redirectToCart(
+            HttpServletRequest request,
+            HttpServletResponse response)
+            throws IOException {
+
+        response.sendRedirect(
+                request.getContextPath() + "/cart"
+        );
+    }
 }

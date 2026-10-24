@@ -15,7 +15,13 @@ import java.io.IOException;
 @WebServlet(name = "ProductVariantServlet", urlPatterns = { "/admin/product-variants" })
 public class ProductVariantServlet extends HttpServlet {
 
-    private final ProductVariantDAO variantDAO = new ProductVariantDAO();
+    private ProductVariantDAO variantDAO;
+
+    @Override
+    public void init() throws ServletException {
+        super.init();
+        variantDAO = new ProductVariantDAO();
+    }
 
     @Override
     protected void doPost(

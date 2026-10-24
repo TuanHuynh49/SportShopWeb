@@ -1,12 +1,12 @@
 package com.mycompany.sportshopweb.controller;
 
 import com.cloudinary.utils.ObjectUtils;
+import com.mycompany.sportshopweb.dao.AdminAlbumDAO;
 import com.mycompany.sportshopweb.dao.AlbumDAO;
 import com.mycompany.sportshopweb.dao.ProductVariantDAO;
 import com.mycompany.sportshopweb.model.Album;
 import com.mycompany.sportshopweb.model.ProductVariant;
 import com.mycompany.sportshopweb.util.CloudinaryConfig;
-import com.mycompany.sportshopweb.util.DBUtil;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
@@ -25,7 +25,13 @@ import java.util.Map;
 @MultipartConfig(fileSizeThreshold = 1024 * 1024, maxFileSize = 10 * 1024 * 1024, maxRequestSize = 25 * 1024 * 1024)
 public class AdminAlbumServlet extends HttpServlet {
 
-    private final ProductVariantDAO variantDAO = new ProductVariantDAO();
+    private ProductVariantDAO variantDAO;
+
+    @Override
+    public void init() throws ServletException {
+        super.init();
+        variantDAO = new ProductVariantDAO();
+    }
 
     @Override
     protected void doGet(
@@ -183,10 +189,7 @@ public class AdminAlbumServlet extends HttpServlet {
         if (albumId > 0) {
             boolean deleted = AlbumDAO.delete(albumId);
             if (deleted) {
-                try {
-                    DBUtil.getEmFactory().getCache().evict(Album.class);
-                } catch (Exception ignored) {
-                }
+                AdminAlbumDAO.evictCache();
                 refreshAppContextAlbums();
                 response.sendRedirect(request.getContextPath() + "/admin/albums?deleteSuccess=1");
                 return;
@@ -197,7 +200,7 @@ public class AdminAlbumServlet extends HttpServlet {
 
     private void refreshAppContextAlbums() {
         try {
-            DBUtil.getEmFactory().getCache().evict(Album.class);
+            AdminAlbumDAO.evictCache();
             List<Album> refreshedList = AlbumDAO.getAllAlbums();
             getServletContext().setAttribute("albumList", refreshedList);
             getServletContext().setAttribute("globalAlbumList", refreshedList);

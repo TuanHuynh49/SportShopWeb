@@ -23,16 +23,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-@WebServlet(name = "ProductActionServlet", urlPatterns = { "/ProductActionServlet" })
+@WebServlet(name = "ProductActionServlet", urlPatterns = { "/admin/product-actions" })
 @MultipartConfig(fileSizeThreshold = 1024 * 1024, maxFileSize = 5 * 1024 * 1024, maxRequestSize = 25 * 1024 * 1024)
 public class ProductActionServlet extends HttpServlet {
 
     private ProductDAO productDAO;
 
     @Override
-    public void init() {
+    public void init() throws ServletException {
+        super.init();
         productDAO = new ProductDAO();
-        getServletContext().setAttribute("ProductDAO", productDAO);
     }
 
     @Override
@@ -47,6 +47,9 @@ public class ProductActionServlet extends HttpServlet {
 
         if ("edit".equals(action)) {
             String idStr = request.getParameter("productId");
+            if (idStr == null || idStr.isBlank()) {
+                idStr = request.getParameter("id");
+            }
 
             int productId;
 
@@ -285,16 +288,10 @@ public class ProductActionServlet extends HttpServlet {
      * Chuẩn bị danh sách thương hiệu và danh mục cho form.
      */
     private void prepareFormData(HttpServletRequest request) {
-        BrandDAO brandDAO = new BrandDAO();
-        CategoryDB categoryDAO = new CategoryDB();
-
-        request.setAttribute("brands", brandDAO.getAllBrand());
-        request.setAttribute("categories", categoryDAO.getAllCategory());
+        request.setAttribute("brands", BrandDAO.getAllBrand());
+        request.setAttribute("categories", CategoryDB.getAllCategory());
     }
 
-    /**
-     * Hiển thị lại form khi có lỗi.
-     */
     private void showFormAfterError(
             HttpServletRequest request,
             HttpServletResponse response,
@@ -340,9 +337,6 @@ public class ProductActionServlet extends HttpServlet {
                 .forward(request, response);
     }
 
-    /**
-     * Tải lên các file ảnh từ request lên Cloudinary và trả về danh sách ProductImage.
-     */
     private List<ProductImage> uploadImages(HttpServletRequest request, Product product, boolean isCreate)
             throws IOException, ServletException {
 
@@ -359,11 +353,17 @@ public class ProductActionServlet extends HttpServlet {
                 continue;
             }
 
+            // Sinh mã định danh ngẫu nhiên duy nhất cho từng ảnh
+            String publicId = "prod_" + System.currentTimeMillis() + "_"
+                    + java.util.UUID.randomUUID().toString().substring(0, 8);
+
             Map<?, ?> result = CloudinaryConfig.getInstance()
                     .uploader()
                     .upload(
                             part.getInputStream().readAllBytes(),
-                            ObjectUtils.asMap("folder", "Product"));
+                            ObjectUtils.asMap(
+                                    "folder", "Product",
+                                    "public_id", publicId));
 
             String imageUrl = (String) result.get("secure_url");
             if (imageUrl == null || imageUrl.isBlank()) {

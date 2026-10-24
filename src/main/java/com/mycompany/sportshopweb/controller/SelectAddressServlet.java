@@ -2,7 +2,6 @@
 package com.mycompany.sportshopweb.controller;
 
 import com.mycompany.sportshopweb.dao.AdressDAO;
-import com.mycompany.sportshopweb.dao.CustomerDAO;
 import com.mycompany.sportshopweb.model.Adress;
 import com.mycompany.sportshopweb.model.Customer;
 
@@ -18,8 +17,13 @@ import java.io.IOException;
 @WebServlet(name = "SelectAddressServlet", urlPatterns = { "/select-address" })
 public class SelectAddressServlet extends HttpServlet {
 
-    private final AdressDAO adressDAO = new AdressDAO();
-    private final CustomerDAO customerDAO = new CustomerDAO();
+    private AdressDAO adressDAO;
+
+    // Tận dụng vòng đời Servlet: Khởi tạo DAO một lần duy nhất khi Servlet được nạp
+    @Override
+    public void init() throws ServletException {
+        adressDAO = new AdressDAO();
+    }
 
     @Override
     protected void doPost(HttpServletRequest request,
@@ -27,10 +31,9 @@ public class SelectAddressServlet extends HttpServlet {
             throws ServletException, IOException {
 
         HttpSession session = request.getSession(false);
-
-        if (session == null) {
+        if (session == null || session.getAttribute("customer") == null) {
             response.sendRedirect(
-                    request.getContextPath() + "/login");
+                    request.getContextPath() + "/LoginServlet");
             return;
         }
 

@@ -1,4 +1,3 @@
-
 package com.mycompany.sportshopweb.controller;
 
 import com.mycompany.sportshopweb.dao.ProductDAO;
@@ -21,9 +20,15 @@ import java.util.Locale;
 @WebServlet(name = "AdminProductServlet", urlPatterns = { "/admin/products" })
 public class AdminProductServlet extends HttpServlet {
 
-    private final ProductDAO productDAO = new ProductDAO();
+    private ProductDAO productDAO;
 
     private static final int PAGE_SIZE = 10;
+
+    @Override
+    public void init() throws ServletException {
+        super.init();
+        productDAO = new ProductDAO();
+    }
 
     @Override
     protected void doGet(
@@ -34,7 +39,7 @@ public class AdminProductServlet extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
 
         try {
-            // 1. Nhận tham số lọc và phân trang
+            // Nhận tham số lọc và phân trang
             String keyword = request.getParameter("keyword");
             String brandIdParam = request.getParameter("brandId");
             String categoryIdParam = request.getParameter("categoryId");
@@ -44,14 +49,14 @@ public class AdminProductServlet extends HttpServlet {
             int categoryId = parseInt(categoryIdParam, 0);
             int requestedPage = Math.max(1, parseInt(pageParam, 1));
 
-            // 2. Lấy danh sách sản phẩm
+            // Lấy danh sách sản phẩm từ database
             List<Product> allProducts = productDAO.getAllProducts();
 
             if (allProducts == null) {
                 allProducts = new ArrayList<>();
             }
 
-            // 3. Lọc theo tên, thương hiệu và danh mục
+            // Lọc theo tên, thương hiệu và danh mục
             List<Product> filteredProducts = new ArrayList<>();
 
             String normalizedKeyword = keyword == null
@@ -105,7 +110,7 @@ public class AdminProductServlet extends HttpServlet {
                 }
             }
 
-            // 4. Phân trang
+            // Phân trang danh sách sản phẩm
             int totalProducts = filteredProducts.size();
 
             int totalPages = Math.max(
@@ -120,7 +125,7 @@ public class AdminProductServlet extends HttpServlet {
             List<Product> products = new ArrayList<>(
                     filteredProducts.subList(fromIndex, toIndex));
 
-            // 5. Đưa dữ liệu lên JSP
+            // Thiết lập dữ liệu thuộc tính cho JSP
             request.setAttribute("products", products);
             request.setAttribute("keyword", keyword == null ? "" : keyword);
             request.setAttribute("selectedBrandId", brandId);
@@ -131,7 +136,7 @@ public class AdminProductServlet extends HttpServlet {
             request.setAttribute("brands", brands);
             request.setAttribute("categories", categories);
 
-            // 6. Xác định sản phẩm đang được quản lý biến thể
+            // Xác định sản phẩm đang được quản lý biến thể
             int manageVariantsId = parseInt(
                     request.getParameter("manageVariants"), 0);
 
@@ -157,7 +162,7 @@ public class AdminProductServlet extends HttpServlet {
                     request.setAttribute(
                             "managedVariants",
                             managedVariants == null
-                                    ? new ArrayList<ProductVariant>()
+                                     ? new ArrayList<ProductVariant>()
                                     : managedVariants);
                 } else {
                     request.setAttribute(
@@ -167,7 +172,7 @@ public class AdminProductServlet extends HttpServlet {
                 }
             }
 
-            // 7. Chuyển đến trang quản lý sản phẩm
+            // Chuyển tiếp đến trang quản lý sản phẩm
             request.getRequestDispatcher("/views/admin/products.jsp")
                     .forward(request, response);
 
