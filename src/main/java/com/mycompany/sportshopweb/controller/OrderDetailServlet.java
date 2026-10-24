@@ -20,8 +20,14 @@ import java.util.List;
 @WebServlet("/order-detail")
 public class OrderDetailServlet extends HttpServlet {
 
-    private final OrderDAO orderDAO = new OrderDAO();
-    private final PaymentDAO paymentDAO = new PaymentDAO();
+    private OrderDAO orderDAO = new OrderDAO();
+    private PaymentDAO paymentDAO = new PaymentDAO();
+    
+    @Override
+    public void init() throws ServletException{
+        orderDAO = new OrderDAO();
+        paymentDAO = new PaymentDAO();
+    }
 
     @Override
     protected void doGet(HttpServletRequest request,
