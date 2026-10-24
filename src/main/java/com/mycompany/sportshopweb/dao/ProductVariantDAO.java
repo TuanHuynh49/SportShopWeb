@@ -73,6 +73,12 @@ public class ProductVariantDAO {
             em.persist(variant);
             tx.commit();
 
+            try {
+                em.getEntityManagerFactory().getCache().evict(ProductVariant.class);
+                em.getEntityManagerFactory().getCache().evict(Product.class, productId);
+            } catch (Exception ignored) {
+            }
+
             return true;
         } catch (RuntimeException e) {
             if (tx.isActive()) {
@@ -117,6 +123,14 @@ public class ProductVariantDAO {
             em.merge(variant);
             tx.commit();
 
+            try {
+                em.getEntityManagerFactory().getCache().evict(ProductVariant.class);
+                if (variant.getProduct() != null) {
+                    em.getEntityManagerFactory().getCache().evict(Product.class, variant.getProduct().getProductId());
+                }
+            } catch (Exception ignored) {
+            }
+
             return true;
         } catch (RuntimeException e) {
             if (tx.isActive()) {
@@ -144,8 +158,17 @@ public class ProductVariantDAO {
             }
 
             tx.begin();
+            int prodId = variant.getProduct() != null ? variant.getProduct().getProductId() : 0;
             em.remove(variant);
             tx.commit();
+
+            try {
+                em.getEntityManagerFactory().getCache().evict(ProductVariant.class);
+                if (prodId > 0) {
+                    em.getEntityManagerFactory().getCache().evict(Product.class, prodId);
+                }
+            } catch (Exception ignored) {
+            }
 
             return true;
         } catch (RuntimeException e) {
@@ -167,6 +190,136 @@ public class ProductVariantDAO {
                             + "ORDER BY p.productId DESC, v.variantId ASC",
                     ProductVariant.class)
                     .getResultList();
+        } finally {
+            em.close();
+        }
+    }
+
+    // =========================================================================
+    // CÁC HÀM XỬ LÝ KHÓA GIỮ CHỖ & TRỪ TỒN KHO CHO LUỒNG THANH TOÁN (PHƯƠNG ÁN A)
+    // =========================================================================
+
+    /**
+     * 1. Khóa giữ chỗ tồn kho (Soft Lock / Inventory Reservation):
+     * Tăng reservedQuantity lên một lượng bằng quantityToReserve,
+     * điều kiện tiên quyết: (quantity - reservedQuantity) >= quantityToReserve.
+     * 
+     * @param em EntityManager hiện tại (để phối hợp cùng transaction của caller)
+     * @param variantId ID biến thể cần giữ chỗ
+     * @param quantityToReserve Số lượng cần giữ chỗ
+     * @return true nếu giữ chỗ thành công, false nếu không đủ hàng khả dụng
+     */
+    public boolean reserveStock(EntityManager em, int variantId, int quantityToReserve) {
+        if (variantId <= 0 || quantityToReserve <= 0 || em == null) {
+            return false;
+        }
+
+        int updatedCount = em.createQuery(
+                "UPDATE ProductVariant v "
+                + "SET v.reservedQuantity = v.reservedQuantity + :qty "
+                + "WHERE v.variantId = :variantId "
+                + "AND (v.quantity - v.reservedQuantity) >= :qty")
+                .setParameter("qty", quantityToReserve)
+                .setParameter("variantId", variantId)
+                .executeUpdate();
+
+        return updatedCount > 0;
+    }
+
+    public boolean reserveStock(int variantId, int quantityToReserve) {
+        EntityManager em = DBUtil.getEmFactory().createEntityManager();
+        EntityTransaction tx = em.getTransaction();
+        try {
+            tx.begin();
+            boolean success = reserveStock(em, variantId, quantityToReserve);
+            tx.commit();
+            return success;
+        } catch (RuntimeException e) {
+            if (tx.isActive()) tx.rollback();
+            throw e;
+        } finally {
+            em.close();
+        }
+    }
+
+    /**
+     * 2. Trừ tồn kho thực tế khi đơn hàng chuyển sang COMPLETED:
+     * Trừ thẳng vào quantity thật và giải phóng reservedQuantity tương ứng.
+     * 
+     * @param em EntityManager hiện tại
+     * @param variantId ID biến thể
+     * @param quantityToDeduct Số lượng thực tế đã thanh toán thành công
+     * @return true nếu cập nhật thành công
+     */
+    public boolean deductReservedStock(EntityManager em, int variantId, int quantityToDeduct) {
+        if (variantId <= 0 || quantityToDeduct <= 0 || em == null) {
+            return false;
+        }
+
+        int updatedCount = em.createQuery(
+                "UPDATE ProductVariant v "
+                + "SET v.quantity = CASE WHEN v.quantity >= :qty THEN (v.quantity - :qty) ELSE 0 END, "
+                + "    v.reservedQuantity = CASE WHEN v.reservedQuantity >= :qty THEN (v.reservedQuantity - :qty) ELSE 0 END "
+                + "WHERE v.variantId = :variantId")
+                .setParameter("qty", quantityToDeduct)
+                .setParameter("variantId", variantId)
+                .executeUpdate();
+
+        return updatedCount > 0;
+    }
+
+    public boolean deductReservedStock(int variantId, int quantityToDeduct) {
+        EntityManager em = DBUtil.getEmFactory().createEntityManager();
+        EntityTransaction tx = em.getTransaction();
+        try {
+            tx.begin();
+            boolean success = deductReservedStock(em, variantId, quantityToDeduct);
+            tx.commit();
+            return success;
+        } catch (RuntimeException e) {
+            if (tx.isActive()) tx.rollback();
+            throw e;
+        } finally {
+            em.close();
+        }
+    }
+
+    /**
+     * 3. Nhả phần giữ chỗ khi đơn hàng bị hủy hoặc quá thời hạn thanh toán 15 phút:
+     * Giảm reservedQuantity, tồn kho thực tế quantity không hề thay đổi.
+     * 
+     * @param em EntityManager hiện tại
+     * @param variantId ID biến thể
+     * @param quantityToRelease Số lượng cần trả lại cho kho khả dụng
+     * @return true nếu nhả giữ chỗ thành công
+     */
+    public boolean releaseReservedStock(EntityManager em, int variantId, int quantityToRelease) {
+        if (variantId <= 0 || quantityToRelease <= 0 || em == null) {
+            return false;
+        }
+
+        int updatedCount = em.createQuery(
+                "UPDATE ProductVariant v "
+                + "SET v.reservedQuantity = CASE WHEN v.reservedQuantity >= :qty THEN (v.reservedQuantity - :qty) ELSE 0 END "
+                + "WHERE v.variantId = :variantId")
+                .setParameter("qty", quantityToRelease)
+                .setParameter("variantId", variantId)
+                .executeUpdate();
+
+        return updatedCount > 0;
+    }
+
+    public boolean releaseReservedStock(int variantId, int quantityToRelease) {
+        EntityManager em = DBUtil.getEmFactory().createEntityManager();
+        EntityTransaction tx = em.getTransaction();
+        try {
+            tx.begin();
+            boolean success = releaseReservedStock(em, variantId, quantityToRelease);
+            tx.commit();
+            return success;
+        } catch (RuntimeException e) {
+            if (tx.isActive()) tx.rollback();
+            throw e;
         } finally {
             em.close();
         }
