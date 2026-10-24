@@ -9,6 +9,6 @@ import jakarta.persistence.Persistence;
 public class DBUtil {
     private static final EntityManagerFactory emf=Persistence.createEntityManagerFactory("SportShopWebPU");
     public static EntityManagerFactory getEmFactory(){
-        return emf;
+        return emf; // khởi tạo EntityManagerFactory dùng chung
     }
 }

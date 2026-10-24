@@ -1,25 +1,17 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
- */
 package com.mycompany.sportshopweb.controller;
 
-import com.mycompany.sportshopweb.dao.CartDAO;
-import com.mycompany.sportshopweb.dao.CustomerDAO;
 import com.mycompany.sportshopweb.dao.UserDAO;
-import com.mycompany.sportshopweb.model.Cart;
-import com.mycompany.sportshopweb.model.Customer;
-import com.mycompany.sportshopweb.model.MembershipTier;
-import com.mycompany.sportshopweb.model.User;
 import com.mycompany.sportshopweb.util.EmailService;
 import com.mycompany.sportshopweb.util.PasswordUtil;
 
 import java.io.IOException;
+import java.util.Random;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 /**
  *
@@ -27,6 +19,14 @@ import jakarta.servlet.http.HttpServletResponse;
  */
 @WebServlet(name = "RegisterServlet", urlPatterns = {"/RegisterServlet"})
 public class RegisterServlet extends HttpServlet {
+
+    private UserDAO userDAO;
+
+    // Tận dụng vòng đời Servlet: Khởi tạo UserDAO một lần duy nhất khi Servlet được nạp
+    @Override
+    public void init() throws ServletException {
+        userDAO = new UserDAO();
+    }
 
     // Khi người dùng truy cập trực tiếp bằng URL thì chuyển hướng đến trang register.jsp
     @Override
@@ -42,7 +42,7 @@ public class RegisterServlet extends HttpServlet {
         // Thiết lập mã hóa tiếng Việt
         request.setCharacterEncoding("UTF-8");
 
-        // 1. Lấy dữ liệu từ form gửi lên
+        // Lấy dữ liệu từ form gửi lên
         String firstName = request.getParameter("firstName");
         String lastName = request.getParameter("lastName");
         String email = request.getParameter("email");
@@ -57,73 +57,66 @@ public class RegisterServlet extends HttpServlet {
         if (email != null) email = email.trim();
         if (phone != null) phone = phone.trim();
 
-        // 2. Giữ lại giá trị người dùng đã nhập để hiển thị lại nếu có lỗi
+        // Giữ lại giá trị người dùng đã nhập để hiển thị lại nếu có lỗi
         request.setAttribute("firstName", firstName);
         request.setAttribute("lastName", lastName);
         request.setAttribute("email", email);
         request.setAttribute("phone", phone);
         request.setAttribute("gender", gender);
 
-        // 3. Kiểm tra tính hợp lệ cơ bản của dữ liệu
+        // Kiểm tra tính hợp lệ cơ bản của dữ liệu
         if (firstName == null || firstName.isEmpty() ||
             lastName == null || lastName.isEmpty() ||
             email == null || email.isEmpty() ||
             phone == null || phone.isEmpty() ||
             password == null || password.isEmpty()) {
-            request.setAttribute("error", "Please fill in all required fields.");
-            request.getRequestDispatcher("/views/register.jsp").forward(request, response);
+            forwardError(request, response, "Please fill in all required fields.");
             return;
         }
 
-        if (password.length() < 6) {
-            request.setAttribute("error", "Password must be at least 6 characters long.");
-            request.getRequestDispatcher("/views/register.jsp").forward(request, response);
+        // Kiểm tra độ mạnh mật khẩu theo chuẩn Chapter 17
+        String passwordError = PasswordUtil.checkPasswordStrength(password);
+        if (passwordError != null) {
+            forwardError(request, response, passwordError);
             return;
         }
 
         if (!password.equals(confirmPassword)) {
-            request.setAttribute("error", "Confirm password does not match.");
-            request.getRequestDispatcher("/views/register.jsp").forward(request, response);
+            forwardError(request, response, "Confirm password does not match.");
             return;
         }
 
-        // Kiểm tra định dạng Email hợp lệ (chống nhập bậy hoặc sai cú pháp email)
+        // Kiểm tra định dạng Email hợp lệ
         String emailRegex = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
         if (!email.matches(emailRegex)) {
-            request.setAttribute("error", "Invalid email format. Please enter a valid email address (e.g. name@gmail.com).");
-            request.getRequestDispatcher("/views/register.jsp").forward(request, response);
+            forwardError(request, response, "Invalid email format. Please enter a valid email address (e.g. name@gmail.com).");
             return;
         }
 
         // Kiểm tra định dạng Số điện thoại Việt Nam (10 chữ số, bắt đầu bằng số 0)
         String phoneRegex = "^0[0-9]{9}$";
         if (!phone.matches(phoneRegex)) {
-            request.setAttribute("error", "Invalid phone number. Must be 10 digits starting with 0 (e.g. 0901234567).");
-            request.getRequestDispatcher("/views/register.jsp").forward(request, response);
+            forwardError(request, response, "Invalid phone number. Must be 10 digits starting with 0 (e.g. 0901234567).");
             return;
         }
 
-        UserDAO userDAO = new UserDAO();
-
-        // 4. Kiểm tra xem Email đã có ai đăng ký chưa
+        // Kiểm tra xem Email đã có ai đăng ký chưa
         if (userDAO.existsByEmail(email)) {
-            request.setAttribute("error", "Email is already registered. Please use another email.");
-            request.getRequestDispatcher("/views/register.jsp").forward(request, response);
+            forwardError(request, response, "Email is already registered. Please use another email.");
             return;
         }
 
-        // 5. Kiểm tra xem Số điện thoại đã có ai đăng ký chưa
+        // Kiểm tra xem Số điện thoại đã có ai đăng ký chưa
         if (userDAO.existsByPhone(phone)) {
-            request.setAttribute("error", "Phone number is already registered. Please use another phone number.");
-            request.getRequestDispatcher("/views/register.jsp").forward(request, response);
+            forwardError(request, response, "Phone number is already registered. Please use another phone number.");
             return;
         }
 
-        // 6. Tạo mã OTP ngẫu nhiên 6 chữ số (Hiệu lực 5 phút)
-        String otp = String.format("%06d", new java.util.Random().nextInt(1000000));
+        // Tạo mã OTP ngẫu nhiên 6 chữ số (Hiệu lực 5 phút)
+        String otp = String.format("%06d", new Random().nextInt(1000000));
 
-        // 7. Lưu tạm thông tin đăng ký vào Session để chờ xác thực OTP
-        jakarta.servlet.http.HttpSession session = request.getSession();
+        // Lưu tạm thông tin đăng ký vào Session để chờ xác thực OTP
+        HttpSession session = request.getSession();
         session.setAttribute("reg_firstName", firstName);
         session.setAttribute("reg_lastName", lastName);
         session.setAttribute("reg_email", email);
@@ -131,13 +124,20 @@ public class RegisterServlet extends HttpServlet {
         session.setAttribute("reg_gender", (gender != null && !gender.isEmpty()) ? gender : "Other");
         session.setAttribute("reg_password", password);
         session.setAttribute("reg_otp", otp);
-        session.setAttribute("reg_otp_expiry", System.currentTimeMillis() + (5 * 60 * 1000)); // 5 phút
+        session.setAttribute("reg_otp_expiry", System.currentTimeMillis() + (5 * 60 * 1000));
 
-        // 8. Gửi mã OTP xác nhận đến Gmail của khách hàng
+        // Gửi mã OTP xác nhận đến Gmail của khách hàng
         String fullName = firstName + " " + lastName;
         EmailService.sendOtpEmail(email, fullName, otp);
 
-        // 9. Chuyển hướng sang trang xác nhận mã OTP
+        // Chuyển hướng sang trang xác nhận mã OTP
         response.sendRedirect(request.getContextPath() + "/VerifyOtpServlet");
+    }
+
+    // Helper chuyển hướng báo lỗi (Áp dụng DRY - Don't Repeat Yourself)
+    private void forwardError(HttpServletRequest request, HttpServletResponse response, String errorMessage)
+            throws ServletException, IOException {
+        request.setAttribute("error", errorMessage);
+        request.getRequestDispatcher("/views/register.jsp").forward(request, response);
     }
 }
