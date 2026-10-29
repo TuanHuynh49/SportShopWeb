@@ -180,6 +180,7 @@ public class ProductVariantDAO {
             em.close();
         }
     }
+
     public List<ProductVariant> getAllVariantsWithProducts() {
         EntityManager em = DBUtil.getEmFactory().createEntityManager();
         try {
@@ -204,8 +205,9 @@ public class ProductVariantDAO {
      * Tăng reservedQuantity lên một lượng bằng quantityToReserve,
      * điều kiện tiên quyết: (quantity - reservedQuantity) >= quantityToReserve.
      * 
-     * @param em EntityManager hiện tại (để phối hợp cùng transaction của caller)
-     * @param variantId ID biến thể cần giữ chỗ
+     * @param em                EntityManager hiện tại (để phối hợp cùng transaction
+     *                          của caller)
+     * @param variantId         ID biến thể cần giữ chỗ
      * @param quantityToReserve Số lượng cần giữ chỗ
      * @return true nếu giữ chỗ thành công, false nếu không đủ hàng khả dụng
      */
@@ -218,10 +220,9 @@ public class ProductVariantDAO {
 
         int updatedCount = em.createQuery(
                 "UPDATE ProductVariant v "
-                + "SET v.quantity = v.quantity - :qty "
-                + "WHERE v.variantId = :variantId "
-                + "AND v.quantity >= :qty "
-                + "AND (v.quantity - v.reservedQuantity) >= :qty")
+                        + "SET v.quantity = v.quantity - :qty "
+                        + "WHERE v.variantId = :variantId "
+                        + "AND v.quantity >= :qty ")
                 .setParameter("qty", quantity)
                 .setParameter("variantId", variantId)
                 .executeUpdate();
