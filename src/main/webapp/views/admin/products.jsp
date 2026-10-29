@@ -10,11 +10,16 @@
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <title>Quản lý sản phẩm</title>
 
+                <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/common.css">
+                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
                 <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/admin-products.css">
             </head>
 
             <body>
-                <div class="page-container">
+                <!-- Header dùng chung -->
+                <jsp:include page="/views/common/header.jsp" />
+
+                <main class="page-container">
 
                     <header class="page-header">
                         <div>
@@ -22,7 +27,7 @@
                             <p class="subtitle">Quản lý sản phẩm, giá bán và tồn kho.</p>
                         </div>
 
-                        <div style="display: flex; gap: 8px;">
+                        <div class="page-header-actions">
                             <a class="button" href="${pageContext.request.contextPath}/admin/albums">
                                 Quản lý Albums
                             </a>
@@ -186,10 +191,10 @@
                                                         <c:choose>
                                                             <c:when test="${not empty product.images and not empty product.images[0].imageUrl}">
                                                                 <img src="${product.images[0].imageUrl}" alt="<c:out value='${product.productName}'/>"
-                                                                     style="width: 44px; height: 44px; object-fit: cover; border-radius: 4px; border: 1px solid #e2e8f0; display: block;">
+                                                                     class="product-thumb">
                                                             </c:when>
                                                             <c:otherwise>
-                                                                <span style="display: inline-block; width: 44px; height: 44px; line-height: 44px; text-align: center; background: #f1f5f9; color: #94a3b8; border-radius: 4px; font-size: 11px;">
+                                                                <span class="product-no-thumb">
                                                                     No img
                                                                 </span>
                                                             </c:otherwise>
@@ -515,7 +520,10 @@
                         </nav>
                     </section>
 
-                </div>
+                </main>
+
+                <!-- Footer dùng chung -->
+                <jsp:include page="/views/common/footer.jsp" />
             </body>
 
             </html>
