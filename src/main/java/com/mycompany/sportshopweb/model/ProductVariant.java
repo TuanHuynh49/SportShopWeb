@@ -41,9 +41,6 @@ public class ProductVariant implements Serializable {
     @Column(name = "quantity")
     private int quantity;
 
-    @Column(name = "reserved_quantity", nullable = false)
-    private int reservedQuantity = 0;
-
     public ProductVariant() {
     }
 
@@ -76,21 +73,6 @@ public class ProductVariant implements Serializable {
 
         this(variantId, product, variantName, size, color, price);
         setQuantity(quantity);
-    }
-
-    // Constructor đầy đủ cả quantity và reservedQuantity
-    public ProductVariant(
-            int variantId,
-            Product product,
-            String variantName,
-            String size,
-            String color,
-            long price,
-            int quantity,
-            int reservedQuantity) {
-
-        this(variantId, product, variantName, size, color, price, quantity);
-        setReservedQuantity(reservedQuantity);
     }
 
     public int getVariantId() {
@@ -153,21 +135,5 @@ public class ProductVariant implements Serializable {
             throw new IllegalArgumentException("Quantity cannot be negative.");
         }
         this.quantity = quantity;
-    }
-
-    public int getReservedQuantity() {
-        return reservedQuantity;
-    }
-
-    public void setReservedQuantity(int reservedQuantity) {
-        this.reservedQuantity = Math.max(0, reservedQuantity);
-    }
-
-    /**
-     * Số lượng hàng thực tế còn khả dụng để bán:
-     * Available = Tổng tồn kho thực tế (quantity) - Số lượng đang bị khóa giữ chỗ (reservedQuantity)
-     */
-    public int getAvailableQuantity() {
-        return Math.max(0, this.quantity - this.reservedQuantity);
     }
 }
