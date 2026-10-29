@@ -94,6 +94,30 @@
                                             </button>
                                         </form>
                                     </c:if>
+
+                                    <!-- Nút xóa địa chỉ -->
+                                    <form action="${pageContext.request.contextPath}/addresses"
+                                          method="post"
+                                          style="display:inline"
+                                          onsubmit="return confirm('Bạn có chắc chắn muốn xóa địa chỉ này không?');">
+                                        <input type="hidden" name="action" value="delete">
+                                        <input type="hidden" name="addressId" value="${address.addressId}">
+                                        <button type="submit" class="btn-address-delete">
+                                            <i class="fa-solid fa-trash-can"></i> Xóa
+                                        </button>
+                                    </form>
+                                </div>
+
+                                <!-- Form chỉnh sửa địa chỉ (ẩn mặc định, mở khi bấm Sửa) -->
+                                <div id="edit-${address.addressId}" class="edit-form-box">
+                                    <form action="${pageContext.request.contextPath}/addresses" method="post">
+                                        <input type="hidden" name="action" value="update">
+                                        <input type="hidden" name="addressId" value="${address.addressId}">
+
+                                        <div class="address-form-group">
+                                            <label class="address-form-label">Tỉnh / Thành phố</label>
+                                            <input type="text"
+                                                   name="province"
                                                    class="address-form-input"
                                                    value="${address.province}"
                                                    required>
