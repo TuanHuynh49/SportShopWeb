@@ -128,7 +128,7 @@
                         </c:if>
 
                         <!-- TAB 1: THÔNG TIN CÁ NHÂN -->
-                        <div id="personalInfoSection" style="${activeTab == 'password' ? 'display: none;' : 'display: block;'}">
+                        <div id="personalInfoSection" class="${activeTab == 'password' ? 'tab-pane-hidden' : ''}">
                             <!-- Khối Form cập nhật thông tin -->
                             <div class="profile-card">
                                 <h3 class="profile-card-title">Personal Information</h3>
@@ -191,7 +191,7 @@
                             </div>
 
                             <!-- Khối thông tin hạng thành viên & ưu đãi -->
-                            <div class="profile-card" style="margin-top: 28px;">
+                            <div class="profile-card profile-card-benefits">
                                 <h3 class="profile-card-title">Membership Tier & Benefits</h3>
                                 <p class="tier-status-text">
                                     Your current status: <strong class="tier-status-highlight"><c:choose><c:when test="${not empty sessionScope.customer.membershipTier}">${sessionScope.customer.membershipTier.tierName}</c:when><c:otherwise>Bronze Member</c:otherwise></c:choose></strong>
@@ -203,10 +203,10 @@
                         </div>
 
                         <!-- TAB 2: ĐỔI MẬT KHẨU -->
-                        <div id="changePasswordSection" style="${activeTab == 'password' ? 'display: block;' : 'display: none;'}">
+                        <div id="changePasswordSection" class="${activeTab != 'password' ? 'tab-pane-hidden' : ''}">
                             <div class="profile-card">
                                 <h3 class="profile-card-title">Change Password</h3>
-                                <p style="color: #6b7280; font-size: 0.9rem; margin-top: -12px; margin-bottom: 24px;">
+                                <p class="profile-card-desc">
                                     For your security, please choose a strong password that is at least 6 characters long.
                                 </p>
 
@@ -244,7 +244,7 @@
                                     </div>
 
                                     <button type="submit" class="profile-save-btn">
-                                        <i class="fa-solid fa-key" style="margin-right: 6px;"></i> Update Password
+                                        <i class="fa-solid fa-key"></i> Update Password
                                     </button>
                                 </form>
                             </div>

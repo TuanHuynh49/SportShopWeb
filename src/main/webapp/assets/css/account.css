@@ -733,6 +733,28 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/CascadeStyleSheet.css
     transform: translateY(0);
 }
 
+.profile-save-btn i {
+    margin-right: 6px;
+}
+
+/* Khoảng cách khối ưu đãi thành viên */
+.profile-card-benefits {
+    margin-top: 28px;
+}
+
+/* Mô tả ngắn trong thẻ đổi mật khẩu */
+.profile-card-desc {
+    color: #6b7280;
+    font-size: 0.9rem;
+    margin-top: -12px;
+    margin-bottom: 24px;
+}
+
+/* Lớp điều khiển ẩn tab theo trạng thái */
+.tab-pane-hidden {
+    display: none !important;
+}
+
 /* Kiểu chữ hiển thị cho khối Hạng thành viên & Ưu đãi */
 .tier-status-text {
     color: #4b5563;
